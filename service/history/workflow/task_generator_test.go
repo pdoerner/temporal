@@ -255,8 +255,8 @@ func TestTaskGeneratorImpl_GenerateWorkflowCloseTasks(t *testing.T) {
 				},
 				tests.Version,
 			)
-			namespaceRegistry.EXPECT().GetNamespaceID(gomock.Any()).Return(namespaceEntry.ID(), nil).AnyTimes()
-			namespaceRegistry.EXPECT().GetNamespaceByID(namespaceEntry.ID()).Return(namespaceEntry, nil).AnyTimes()
+			namespaceRegistry.EXPECT().GetNamespaceID(gomock.Any(), gomock.Any()).Return(namespaceEntry.ID(), nil).AnyTimes()
+			namespaceRegistry.EXPECT().GetNamespaceByID(gomock.Any(), namespaceEntry.ID()).Return(namespaceEntry, nil).AnyTimes()
 
 			mutableState := NewMockMutableState(ctrl)
 			mutableState.EXPECT().GetNamespaceEntry().Return(namespaceEntry).AnyTimes()

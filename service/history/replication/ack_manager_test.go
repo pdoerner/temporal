@@ -106,7 +106,7 @@ func (s *ackManagerSuite) SetupTest() {
 	)
 
 	s.mockNamespaceRegistry = s.mockShard.Resource.NamespaceCache
-	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(tests.NamespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(gomock.Any(), tests.NamespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
 
 	s.mockExecutionMgr = s.mockShard.Resource.ExecutionMgr
 	s.mockClusterMetadata = s.mockShard.Resource.ClusterMetadata
@@ -235,7 +235,7 @@ func (s *ackManagerSuite) TestSyncActivity_WorkflowMissing() {
 		WorkflowID:  workflowID,
 		RunID:       runID,
 	}).Return(nil, serviceerror.NewNotFound(""))
-	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(namespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(ctx, namespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
 
 	result, err := s.replicationAckManager.generateSyncActivityTask(ctx, task)
 	s.NoError(err)
@@ -275,7 +275,7 @@ func (s *ackManagerSuite) TestSyncActivity_WorkflowCompleted() {
 	release(nil)
 	s.mockMutableState.EXPECT().StartTransaction(gomock.Any()).Return(false, nil)
 	s.mockMutableState.EXPECT().IsWorkflowExecutionRunning().Return(false).AnyTimes()
-	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(namespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(ctx, namespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
 
 	result, err := s.replicationAckManager.generateSyncActivityTask(ctx, task)
 	s.NoError(err)
@@ -317,7 +317,7 @@ func (s *ackManagerSuite) TestSyncActivity_ActivityCompleted() {
 	s.mockMutableState.EXPECT().StartTransaction(gomock.Any()).Return(false, nil)
 	s.mockMutableState.EXPECT().IsWorkflowExecutionRunning().Return(true).AnyTimes()
 	s.mockMutableState.EXPECT().GetActivityInfo(scheduledEventID).Return(nil, false).AnyTimes()
-	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(namespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(ctx, namespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
 
 	result, err := s.replicationAckManager.generateSyncActivityTask(ctx, task)
 	s.NoError(err)
@@ -396,7 +396,7 @@ func (s *ackManagerSuite) TestSyncActivity_ActivityRetry() {
 		},
 	}
 	s.mockMutableState.EXPECT().GetExecutionInfo().Return(&persistencespb.WorkflowExecutionInfo{VersionHistories: versionHistories}).AnyTimes()
-	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(namespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(ctx, namespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
 
 	result, err := s.replicationAckManager.generateSyncActivityTask(ctx, task)
 	s.NoError(err)
@@ -499,7 +499,7 @@ func (s *ackManagerSuite) TestSyncActivity_ActivityRunning() {
 		},
 	}
 	s.mockMutableState.EXPECT().GetExecutionInfo().Return(&persistencespb.WorkflowExecutionInfo{VersionHistories: versionHistories}).AnyTimes()
-	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(namespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(ctx, namespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
 
 	result, err := s.replicationAckManager.generateSyncActivityTask(ctx, task)
 	s.NoError(err)
@@ -763,7 +763,7 @@ func (s *ackManagerSuite) TestGetTasks_FilterNamespace() {
 		&persistencespb.NamespaceConfig{},
 		"not-a-"+cluster.TestCurrentClusterName,
 	)
-	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(notExistOnTestClusterNamespaceID).Return(notExistOnTestClusterNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(gomock.Any(), notExistOnTestClusterNamespaceID).Return(notExistOnTestClusterNamespaceEntry, nil).AnyTimes()
 
 	minTaskID, maxTaskID := s.replicationAckManager.taskIDsRange(22)
 

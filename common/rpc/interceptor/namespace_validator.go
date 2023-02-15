@@ -115,7 +115,7 @@ func (ni *NamespaceValidatorInterceptor) StateValidationIntercept(
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
 ) (interface{}, error) {
-	namespaceEntry, err := ni.extractNamespace(req)
+	namespaceEntry, err := ni.extractNamespace(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -132,14 +132,14 @@ func (ni *NamespaceValidatorInterceptor) StateValidationIntercept(
 	return handler(ctx, req)
 }
 
-func (ni *NamespaceValidatorInterceptor) extractNamespace(req interface{}) (*namespace.Namespace, error) {
+func (ni *NamespaceValidatorInterceptor) extractNamespace(ctx context.Context, req interface{}) (*namespace.Namespace, error) {
 	// Token namespace has priority over request namespace. Check it first.
-	tokenNamespaceEntry, tokenErr := ni.extractNamespaceFromTaskToken(req)
+	tokenNamespaceEntry, tokenErr := ni.extractNamespaceFromTaskToken(ctx, req)
 	if tokenErr != nil {
 		return nil, tokenErr
 	}
 
-	requestNamespaceEntry, requestErr := ni.extractNamespaceFromRequest(req)
+	requestNamespaceEntry, requestErr := ni.extractNamespaceFromRequest(ctx, req)
 	// If namespace was extracted from token then it will be used.
 	if requestErr != nil && tokenNamespaceEntry == nil {
 		return nil, requestErr
@@ -158,7 +158,7 @@ func (ni *NamespaceValidatorInterceptor) extractNamespace(req interface{}) (*nam
 	return requestNamespaceEntry, nil
 }
 
-func (ni *NamespaceValidatorInterceptor) extractNamespaceFromRequest(req interface{}) (*namespace.Namespace, error) {
+func (ni *NamespaceValidatorInterceptor) extractNamespaceFromRequest(ctx context.Context, req interface{}) (*namespace.Namespace, error) {
 	reqWithNamespace, hasNamespace := req.(NamespaceNameGetter)
 	if !hasNamespace {
 		return nil, nil
@@ -189,7 +189,7 @@ func (ni *NamespaceValidatorInterceptor) extractNamespaceFromRequest(req interfa
 		// Namespace is optional for search attributes operations.
 		// It's required when using SQL DB for visibility, but not when using Elasticsearch.
 		if !namespaceName.IsEmpty() {
-			return ni.namespaceRegistry.GetNamespace(namespaceName)
+			return ni.namespaceRegistry.GetNamespace(ctx, namespaceName)
 		}
 		return nil, nil
 	default:
@@ -197,11 +197,11 @@ func (ni *NamespaceValidatorInterceptor) extractNamespaceFromRequest(req interfa
 		if namespaceName.IsEmpty() {
 			return nil, errNamespaceNotSet
 		}
-		return ni.namespaceRegistry.GetNamespace(namespaceName)
+		return ni.namespaceRegistry.GetNamespace(ctx, namespaceName)
 	}
 }
 
-func (ni *NamespaceValidatorInterceptor) extractNamespaceFromTaskToken(req interface{}) (*namespace.Namespace, error) {
+func (ni *NamespaceValidatorInterceptor) extractNamespaceFromTaskToken(ctx context.Context, req interface{}) (*namespace.Namespace, error) {
 	reqWithTaskToken, hasTaskToken := req.(interface{ GetTaskToken() []byte })
 	if !hasTaskToken {
 		return nil, nil
@@ -229,7 +229,7 @@ func (ni *NamespaceValidatorInterceptor) extractNamespaceFromTaskToken(req inter
 	if namespaceID.IsEmpty() {
 		return nil, errNamespaceNotSet
 	}
-	return ni.namespaceRegistry.GetNamespaceByID(namespaceID)
+	return ni.namespaceRegistry.GetNamespaceByID(ctx, namespaceID)
 }
 
 func (ni *NamespaceValidatorInterceptor) checkNamespaceMatch(requestNamespace *namespace.Namespace, tokenNamespace *namespace.Namespace) error {

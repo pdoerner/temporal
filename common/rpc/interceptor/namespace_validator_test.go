@@ -143,7 +143,7 @@ func (s *namespaceValidatorSuite) Test_StateValidationIntercept_NamespaceNotFoun
 		FullMethod: "/temporal/random",
 	}
 
-	s.mockRegistry.EXPECT().GetNamespace(namespace.Name("not-found-namespace")).Return(nil, serviceerror.NewNamespaceNotFound("missing-namespace"))
+	s.mockRegistry.EXPECT().GetNamespace(gomock.Any(), namespace.Name("not-found-namespace")).Return(nil, serviceerror.NewNamespaceNotFound("missing-namespace"))
 	req := &workflowservice.StartWorkflowExecutionRequest{Namespace: "not-found-namespace"}
 	handlerCalled := false
 	_, err := nvi.StateValidationIntercept(context.Background(), req, serverInfo, func(ctx context.Context, req interface{}) (interface{}, error) {
@@ -154,7 +154,7 @@ func (s *namespaceValidatorSuite) Test_StateValidationIntercept_NamespaceNotFoun
 	s.IsType(&serviceerror.NamespaceNotFound{}, err)
 	s.False(handlerCalled)
 
-	s.mockRegistry.EXPECT().GetNamespaceByID(namespace.ID("not-found-namespace-id")).Return(nil, serviceerror.NewNamespaceNotFound("missing-namespace"))
+	s.mockRegistry.EXPECT().GetNamespaceByID(gomock.Any(), namespace.ID("not-found-namespace-id")).Return(nil, serviceerror.NewNamespaceNotFound("missing-namespace"))
 	taskToken, _ := common.NewProtoTaskTokenSerializer().Serialize(&tokenspb.Task{
 		NamespaceId: "not-found-namespace-id",
 	})
@@ -290,7 +290,7 @@ func (s *namespaceValidatorSuite) Test_StateValidationIntercept_StatusFromNamesp
 			_, isDescribeNamespace := testCase.req.(*workflowservice.DescribeNamespaceRequest)
 			_, isRegisterNamespace := testCase.req.(*workflowservice.RegisterNamespaceRequest)
 			if !isDescribeNamespace && !isRegisterNamespace {
-				s.mockRegistry.EXPECT().GetNamespace(namespace.Name("test-namespace")).Return(namespace.FromPersistentState(
+				s.mockRegistry.EXPECT().GetNamespace(gomock.Any(), namespace.Name("test-namespace")).Return(namespace.FromPersistentState(
 					&persistence.GetNamespaceResponse{
 						Namespace: &persistencespb.NamespaceDetail{
 							Config: &persistencespb.NamespaceConfig{},
@@ -368,7 +368,7 @@ func (s *namespaceValidatorSuite) Test_StateValidationIntercept_StatusFromToken(
 	}
 
 	for _, testCase := range testCases {
-		s.mockRegistry.EXPECT().GetNamespaceByID(namespace.ID("test-namespace-id")).Return(namespace.FromPersistentState(
+		s.mockRegistry.EXPECT().GetNamespaceByID(gomock.Any(), namespace.ID("test-namespace-id")).Return(namespace.FromPersistentState(
 			&persistence.GetNamespaceResponse{
 				Namespace: &persistencespb.NamespaceDetail{
 					Config:            &persistencespb.NamespaceConfig{},
@@ -566,8 +566,8 @@ func (s *namespaceValidatorSuite) Test_StateValidationIntercept_TokenNamespaceEn
 			})
 
 		// 2 times because of RespondQueryTaskCompleted.
-		s.mockRegistry.EXPECT().GetNamespace(testCase.requestNamespaceName).Return(requestNamespace, nil).Times(2)
-		s.mockRegistry.EXPECT().GetNamespaceByID(testCase.tokenNamespaceID).Return(tokenNamespace, nil).Times(2)
+		s.mockRegistry.EXPECT().GetNamespace(gomock.Any(), testCase.requestNamespaceName).Return(requestNamespace, nil).Times(2)
+		s.mockRegistry.EXPECT().GetNamespaceByID(gomock.Any(), testCase.tokenNamespaceID).Return(tokenNamespace, nil).Times(2)
 
 		nvi := NewNamespaceValidatorInterceptor(
 			s.mockRegistry,
@@ -657,7 +657,7 @@ func (s *namespaceValidatorSuite) Test_Intercept_SearchAttributeRequests() {
 
 	for _, testCase := range testCases {
 		if testCase.hasNamespace {
-			s.mockRegistry.EXPECT().GetNamespace(namespace.Name("test-namespace")).Return(nil, nil)
+			s.mockRegistry.EXPECT().GetNamespace(gomock.Any(), namespace.Name("test-namespace")).Return(nil, nil)
 		}
 
 		nvi := NewNamespaceValidatorInterceptor(

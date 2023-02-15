@@ -509,7 +509,7 @@ func (s *stateBuilderSuite) TestApplyEvents_EventTypeWorkflowExecutionContinuedA
 	s.mockMutableState.EXPECT().ClearStickyness()
 
 	// new workflow namespace
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.ParentNamespace).Return(tests.GlobalParentNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.ParentNamespace).Return(tests.GlobalParentNamespaceEntry, nil).AnyTimes()
 	// task for the new workflow
 	s.mockTaskGeneratorForNew.EXPECT().GenerateRecordWorkflowStartedTasks(
 		newRunStartedEvent,
@@ -566,7 +566,7 @@ func (s *stateBuilderSuite) TestApplyEvents_EventTypeWorkflowExecutionContinuedA
 	s.mockMutableState.EXPECT().ClearStickyness()
 
 	// new workflow namespace
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.ParentNamespace).Return(tests.GlobalParentNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.ParentNamespace).Return(tests.GlobalParentNamespaceEntry, nil).AnyTimes()
 	newRunStateBuilder, err := s.stateRebuilder.ApplyEvents(
 		context.Background(), tests.NamespaceID, requestID, execution, s.toHistory(continueAsNewEvent), nil,
 	)

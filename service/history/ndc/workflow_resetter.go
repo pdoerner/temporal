@@ -128,7 +128,7 @@ func (r *workflowResetterImpl) ResetWorkflow(
 	resetReapplyType enumspb.ResetReapplyType,
 ) (retError error) {
 
-	namespaceEntry, err := r.namespaceRegistry.GetNamespaceByID(namespaceID)
+	namespaceEntry, err := r.namespaceRegistry.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return err
 	}
@@ -148,6 +148,7 @@ func (r *workflowResetterImpl) ResetWorkflow(
 		resetWorkflowVersion = currentMutableState.GetCurrentVersion()
 
 		currentWorkflowMutation, currentWorkflowEventsSeq, err = currentMutableState.CloseTransactionAsMutation(
+			ctx,
 			r.shard.GetTimeSource().Now(),
 			workflow.TransactionPolicyActive,
 		)
@@ -351,6 +352,7 @@ func (r *workflowResetterImpl) persistToDB(
 
 	now := r.shard.GetTimeSource().Now()
 	resetWorkflowSnapshot, resetWorkflowEventsSeq, err := resetWorkflow.GetMutableState().CloseTransactionAsSnapshot(
+		ctx,
 		now,
 		workflow.TransactionPolicyActive,
 	)

@@ -438,6 +438,6 @@ func (d *dbTaskManager) backoffDispatch(duration time.Duration) {
 }
 
 func (d *dbTaskManager) initContext(ctx context.Context) context.Context {
-	namespace, _ := d.namespaceRegistry.GetNamespaceName(namespace.ID(d.taskQueueKey.NamespaceID))
+	namespace, _ := d.namespaceRegistry.GetNamespaceName(ctx, namespace.ID(d.taskQueueKey.NamespaceID))
 	return headers.SetCallerInfo(ctx, headers.NewBackgroundCallerInfo(namespace.String()))
 }

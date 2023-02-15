@@ -218,7 +218,7 @@ func (e *matchingEngineImpl) getTaskQueueManager(ctx context.Context, taskQueue 
 		e.taskQueuesLock.Lock()
 		if tqm, ok = e.taskQueues[*taskQueue]; !ok {
 			var err error
-			tqm, err = newTaskQueueManager(e, taskQueue, taskQueueKind, e.config, e.clusterMeta)
+			tqm, err = newTaskQueueManager(ctx, e, taskQueue, taskQueueKind, e.config, e.clusterMeta)
 			if err != nil {
 				e.taskQueuesLock.Unlock()
 				return nil, err
@@ -228,7 +228,7 @@ func (e *matchingEngineImpl) getTaskQueueManager(ctx context.Context, taskQueue 
 			countKey := taskQueueCounterKey{namespaceID: taskQueue.namespaceID, taskType: taskQueue.taskType, queueType: taskQueueKind}
 			e.taskQueueCount[countKey]++
 			taskQueueCount := e.taskQueueCount[countKey]
-			e.updateTaskQueueGauge(countKey, taskQueueCount)
+			e.updateTaskQueueGauge(ctx, countKey, taskQueueCount)
 		}
 		e.taskQueuesLock.Unlock()
 	}
@@ -664,11 +664,11 @@ func (e *matchingEngineImpl) ListTaskQueuePartitions(
 	hCtx *handlerContext,
 	request *matchingservice.ListTaskQueuePartitionsRequest,
 ) (*matchingservice.ListTaskQueuePartitionsResponse, error) {
-	activityTaskQueueInfo, err := e.listTaskQueuePartitions(request, enumspb.TASK_QUEUE_TYPE_ACTIVITY)
+	activityTaskQueueInfo, err := e.listTaskQueuePartitions(hCtx, request, enumspb.TASK_QUEUE_TYPE_ACTIVITY)
 	if err != nil {
 		return nil, err
 	}
-	workflowTaskQueueInfo, err := e.listTaskQueuePartitions(request, enumspb.TASK_QUEUE_TYPE_WORKFLOW)
+	workflowTaskQueueInfo, err := e.listTaskQueuePartitions(hCtx, request, enumspb.TASK_QUEUE_TYPE_WORKFLOW)
 	if err != nil {
 		return nil, err
 	}
@@ -679,8 +679,13 @@ func (e *matchingEngineImpl) ListTaskQueuePartitions(
 	return &resp, nil
 }
 
-func (e *matchingEngineImpl) listTaskQueuePartitions(request *matchingservice.ListTaskQueuePartitionsRequest, taskQueueType enumspb.TaskQueueType) ([]*taskqueuepb.TaskQueuePartitionMetadata, error) {
+func (e *matchingEngineImpl) listTaskQueuePartitions(
+	ctx context.Context,
+	request *matchingservice.ListTaskQueuePartitionsRequest,
+	taskQueueType enumspb.TaskQueueType,
+) ([]*taskqueuepb.TaskQueuePartitionMetadata, error) {
 	partitions, err := e.getAllPartitions(
+		ctx,
 		namespace.Name(request.GetNamespace()),
 		*request.TaskQueue,
 		taskQueueType,
@@ -822,12 +827,13 @@ func (e *matchingEngineImpl) getHostInfo(partitionKey string) (string, error) {
 }
 
 func (e *matchingEngineImpl) getAllPartitions(
+	ctx context.Context,
 	namespace namespace.Name,
 	taskQueue taskqueuepb.TaskQueue,
 	taskQueueType enumspb.TaskQueueType,
 ) ([]string, error) {
 	var partitionKeys []string
-	namespaceID, err := e.namespaceRegistry.GetNamespaceID(namespace)
+	namespaceID, err := e.namespaceRegistry.GetNamespaceID(ctx, namespace)
 	if err != nil {
 		return partitionKeys, err
 	}
@@ -876,8 +882,8 @@ func (e *matchingEngineImpl) unloadTaskQueue(unloadTQM taskQueueManager) {
 	foundTQM.Stop()
 }
 
-func (e *matchingEngineImpl) updateTaskQueueGauge(countKey taskQueueCounterKey, taskQueueCount int) {
-	nsEntry, err := e.namespaceRegistry.GetNamespaceByID(countKey.namespaceID)
+func (e *matchingEngineImpl) updateTaskQueueGauge(ctx context.Context, countKey taskQueueCounterKey, taskQueueCount int) {
+	nsEntry, err := e.namespaceRegistry.GetNamespaceByID(ctx, countKey.namespaceID)
 	namespace := namespace.Name("unknown")
 	if err == nil {
 		namespace = nsEntry.Name()

@@ -342,7 +342,7 @@ func (adh *AdminHandler) addSearchAttributesSQL(
 	if nsName == "" {
 		return errNamespaceNotSet
 	}
-	ns, err := adh.namespaceRegistry.GetNamespace(namespace.Name(nsName))
+	ns, err := adh.namespaceRegistry.GetNamespace(ctx, namespace.Name(nsName))
 	if err != nil {
 		return serviceerror.NewUnavailable(fmt.Sprintf(errUnableToGetNamespaceInfoMessage, nsName))
 	}
@@ -470,7 +470,7 @@ func (adh *AdminHandler) removeSearchAttributesSQL(
 	if nsName == "" {
 		return errNamespaceNotSet
 	}
-	ns, err := adh.namespaceRegistry.GetNamespace(namespace.Name(nsName))
+	ns, err := adh.namespaceRegistry.GetNamespace(ctx, namespace.Name(nsName))
 	if err != nil {
 		return serviceerror.NewUnavailable(fmt.Sprintf(errUnableToGetNamespaceInfoMessage, nsName))
 	}
@@ -523,7 +523,7 @@ func (adh *AdminHandler) GetSearchAttributes(
 	if adh.visibilityMgr.GetName() == elasticsearch.PersistenceName || indexName == "" {
 		return adh.getSearchAttributesElasticsearch(ctx, indexName, searchAttributes)
 	}
-	return adh.getSearchAttributesSQL(request, searchAttributes)
+	return adh.getSearchAttributesSQL(ctx, request, searchAttributes)
 }
 
 func (adh *AdminHandler) getSearchAttributesElasticsearch(
@@ -567,6 +567,7 @@ func (adh *AdminHandler) getSearchAttributesElasticsearch(
 }
 
 func (adh *AdminHandler) getSearchAttributesSQL(
+	ctx context.Context,
 	request *adminservice.GetSearchAttributesRequest,
 	searchAttributes searchattribute.NameTypeMap,
 ) (*adminservice.GetSearchAttributesResponse, error) {
@@ -574,7 +575,7 @@ func (adh *AdminHandler) getSearchAttributesSQL(
 	if nsName == "" {
 		return nil, errNamespaceNotSet
 	}
-	ns, err := adh.namespaceRegistry.GetNamespace(namespace.Name(nsName))
+	ns, err := adh.namespaceRegistry.GetNamespace(ctx, namespace.Name(nsName))
 	if err != nil {
 		return nil, serviceerror.NewUnavailable(
 			fmt.Sprintf(errUnableToGetNamespaceInfoMessage, nsName),
@@ -604,7 +605,7 @@ func (adh *AdminHandler) RebuildMutableState(ctx context.Context, request *admin
 		return nil, err
 	}
 
-	namespaceID, err := adh.namespaceRegistry.GetNamespaceID(namespace.Name(request.GetNamespace()))
+	namespaceID, err := adh.namespaceRegistry.GetNamespaceID(ctx, namespace.Name(request.GetNamespace()))
 	if err != nil {
 		return nil, err
 	}
@@ -630,7 +631,7 @@ func (adh *AdminHandler) DescribeMutableState(ctx context.Context, request *admi
 		return nil, err
 	}
 
-	namespaceID, err := adh.namespaceRegistry.GetNamespaceID(namespace.Name(request.GetNamespace()))
+	namespaceID, err := adh.namespaceRegistry.GetNamespaceID(ctx, namespace.Name(request.GetNamespace()))
 	if err != nil {
 		return nil, err
 	}
@@ -803,7 +804,7 @@ func (adh *AdminHandler) DescribeHistoryHost(ctx context.Context, request *admin
 	var err error
 	var namespaceID namespace.ID
 	if request.WorkflowExecution != nil {
-		namespaceID, err = adh.namespaceRegistry.GetNamespaceID(namespace.Name(request.Namespace))
+		namespaceID, err = adh.namespaceRegistry.GetNamespaceID(ctx, namespace.Name(request.Namespace))
 		if err != nil {
 			return nil, err
 		}
@@ -847,7 +848,7 @@ func (adh *AdminHandler) GetWorkflowExecutionRawHistoryV2(ctx context.Context, r
 		return nil, err
 	}
 
-	ns, err := adh.namespaceRegistry.GetNamespaceByID(namespace.ID(request.GetNamespaceId()))
+	ns, err := adh.namespaceRegistry.GetNamespaceByID(ctx, namespace.ID(request.GetNamespaceId()))
 	if err != nil {
 		return nil, err
 	}
@@ -1320,7 +1321,7 @@ func (adh *AdminHandler) ReapplyEvents(ctx context.Context, request *adminservic
 	if request.GetEvents() == nil {
 		return nil, errWorkflowIDNotSet
 	}
-	namespaceEntry, err := adh.namespaceRegistry.GetNamespaceByID(namespace.ID(request.GetNamespaceId()))
+	namespaceEntry, err := adh.namespaceRegistry.GetNamespaceByID(ctx, namespace.ID(request.GetNamespaceId()))
 	if err != nil {
 		return nil, err
 	}
@@ -1495,7 +1496,7 @@ func (adh *AdminHandler) RefreshWorkflowTasks(
 	if err := validateExecution(request.Execution); err != nil {
 		return nil, err
 	}
-	namespaceEntry, err := adh.namespaceRegistry.GetNamespaceByID(namespace.ID(request.GetNamespaceId()))
+	namespaceEntry, err := adh.namespaceRegistry.GetNamespaceByID(ctx, namespace.ID(request.GetNamespaceId()))
 	if err != nil {
 		return nil, err
 	}
@@ -1558,7 +1559,7 @@ func (adh *AdminHandler) GetTaskQueueTasks(
 		return nil, errRequestNotSet
 	}
 
-	namespaceID, err := adh.namespaceRegistry.GetNamespaceID(namespace.Name(request.GetNamespace()))
+	namespaceID, err := adh.namespaceRegistry.GetNamespaceID(ctx, namespace.Name(request.GetNamespace()))
 	if err != nil {
 		return nil, err
 	}
@@ -1596,7 +1597,7 @@ func (adh *AdminHandler) DeleteWorkflowExecution(
 		return nil, err
 	}
 
-	namespaceID, err := adh.namespaceRegistry.GetNamespaceID(namespace.Name(request.GetNamespace()))
+	namespaceID, err := adh.namespaceRegistry.GetNamespaceID(ctx, namespace.Name(request.GetNamespace()))
 	if err != nil {
 		return nil, err
 	}

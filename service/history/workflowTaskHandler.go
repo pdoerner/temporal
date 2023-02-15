@@ -726,7 +726,7 @@ func (handler *workflowTaskHandlerImpl) handleCommandCancelWorkflow(
 }
 
 func (handler *workflowTaskHandlerImpl) handleCommandRequestCancelExternalWorkflow(
-	_ context.Context,
+	ctx context.Context,
 	attr *commandpb.RequestCancelExternalWorkflowExecutionCommandAttributes,
 ) error {
 
@@ -736,7 +736,7 @@ func (handler *workflowTaskHandlerImpl) handleCommandRequestCancelExternalWorkfl
 	namespaceID := namespace.ID(executionInfo.NamespaceId)
 	targetNamespaceID := namespaceID
 	if attr.GetNamespace() != "" {
-		targetNamespaceEntry, err := handler.namespaceRegistry.GetNamespace(namespace.Name(attr.GetNamespace()))
+		targetNamespaceEntry, err := handler.namespaceRegistry.GetNamespace(ctx, namespace.Name(attr.GetNamespace()))
 		if err != nil {
 			return err
 		}
@@ -746,6 +746,7 @@ func (handler *workflowTaskHandlerImpl) handleCommandRequestCancelExternalWorkfl
 	if err := handler.validateCommandAttr(
 		func() (enumspb.WorkflowTaskFailedCause, error) {
 			return handler.attrValidator.validateCancelExternalWorkflowExecutionAttributes(
+				ctx,
 				namespaceID,
 				targetNamespaceID,
 				handler.initiatedChildExecutionsInBatch,
@@ -879,7 +880,7 @@ func (handler *workflowTaskHandlerImpl) handleCommandContinueAsNewWorkflow(
 	var parentNamespace namespace.Name
 	if handler.mutableState.HasParentExecution() {
 		parentNamespaceID := namespace.ID(handler.mutableState.GetExecutionInfo().ParentNamespaceId)
-		parentNamespaceEntry, err := handler.namespaceRegistry.GetNamespaceByID(parentNamespaceID)
+		parentNamespaceEntry, err := handler.namespaceRegistry.GetNamespaceByID(ctx, parentNamespaceID)
 		if err == nil {
 			parentNamespace = parentNamespaceEntry.Name()
 		}
@@ -901,7 +902,7 @@ func (handler *workflowTaskHandlerImpl) handleCommandContinueAsNewWorkflow(
 }
 
 func (handler *workflowTaskHandlerImpl) handleCommandStartChildWorkflow(
-	_ context.Context,
+	ctx context.Context,
 	attr *commandpb.StartChildWorkflowExecutionCommandAttributes,
 ) error {
 
@@ -913,7 +914,7 @@ func (handler *workflowTaskHandlerImpl) handleCommandStartChildWorkflow(
 	targetNamespaceID := parentNamespaceID
 	targetNamespace := parentNamespace
 	if attr.GetNamespace() != "" {
-		targetNamespaceEntry, err := handler.namespaceRegistry.GetNamespace(namespace.Name(attr.GetNamespace()))
+		targetNamespaceEntry, err := handler.namespaceRegistry.GetNamespace(ctx, namespace.Name(attr.GetNamespace()))
 		if err != nil {
 			return err
 		}
@@ -942,6 +943,7 @@ func (handler *workflowTaskHandlerImpl) handleCommandStartChildWorkflow(
 	if err := handler.validateCommandAttr(
 		func() (enumspb.WorkflowTaskFailedCause, error) {
 			return handler.attrValidator.validateStartChildExecutionAttributes(
+				ctx,
 				parentNamespaceID,
 				targetNamespaceID,
 				targetNamespace,
@@ -1005,7 +1007,7 @@ func (handler *workflowTaskHandlerImpl) handleCommandStartChildWorkflow(
 }
 
 func (handler *workflowTaskHandlerImpl) handleCommandSignalExternalWorkflow(
-	_ context.Context,
+	ctx context.Context,
 	attr *commandpb.SignalExternalWorkflowExecutionCommandAttributes,
 ) error {
 
@@ -1015,7 +1017,7 @@ func (handler *workflowTaskHandlerImpl) handleCommandSignalExternalWorkflow(
 	namespaceID := namespace.ID(executionInfo.NamespaceId)
 	targetNamespaceID := namespaceID
 	if attr.GetNamespace() != "" {
-		targetNamespaceEntry, err := handler.namespaceRegistry.GetNamespace(namespace.Name(attr.GetNamespace()))
+		targetNamespaceEntry, err := handler.namespaceRegistry.GetNamespace(ctx, namespace.Name(attr.GetNamespace()))
 		if err != nil {
 			return err
 		}
@@ -1025,6 +1027,7 @@ func (handler *workflowTaskHandlerImpl) handleCommandSignalExternalWorkflow(
 	if err := handler.validateCommandAttr(
 		func() (enumspb.WorkflowTaskFailedCause, error) {
 			return handler.attrValidator.validateSignalExternalWorkflowExecutionAttributes(
+				ctx,
 				namespaceID,
 				targetNamespaceID,
 				attr,
@@ -1053,7 +1056,7 @@ func (handler *workflowTaskHandlerImpl) handleCommandSignalExternalWorkflow(
 }
 
 func (handler *workflowTaskHandlerImpl) handleCommandUpsertWorkflowSearchAttributes(
-	_ context.Context,
+	ctx context.Context,
 	attr *commandpb.UpsertWorkflowSearchAttributesCommandAttributes,
 ) error {
 
@@ -1062,7 +1065,7 @@ func (handler *workflowTaskHandlerImpl) handleCommandUpsertWorkflowSearchAttribu
 	// get namespace name
 	executionInfo := handler.mutableState.GetExecutionInfo()
 	namespaceID := namespace.ID(executionInfo.NamespaceId)
-	namespaceEntry, err := handler.namespaceRegistry.GetNamespaceByID(namespaceID)
+	namespaceEntry, err := handler.namespaceRegistry.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return serviceerror.NewUnavailable(fmt.Sprintf("Unable to get namespace for namespaceID: %v.", namespaceID))
 	}
@@ -1125,7 +1128,7 @@ func (handler *workflowTaskHandlerImpl) handleCommandUpsertWorkflowSearchAttribu
 }
 
 func (handler *workflowTaskHandlerImpl) handleCommandModifyWorkflowProperties(
-	_ context.Context,
+	ctx context.Context,
 	attr *commandpb.ModifyWorkflowPropertiesCommandAttributes,
 ) error {
 
@@ -1134,7 +1137,7 @@ func (handler *workflowTaskHandlerImpl) handleCommandModifyWorkflowProperties(
 	// get namespace name
 	executionInfo := handler.mutableState.GetExecutionInfo()
 	namespaceID := namespace.ID(executionInfo.NamespaceId)
-	namespaceEntry, err := handler.namespaceRegistry.GetNamespaceByID(namespaceID)
+	namespaceEntry, err := handler.namespaceRegistry.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return serviceerror.NewUnavailable(fmt.Sprintf("Unable to get namespace for namespaceID: %v.", namespaceID))
 	}

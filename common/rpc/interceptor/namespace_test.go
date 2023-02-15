@@ -25,6 +25,7 @@
 package interceptor
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
@@ -163,10 +164,10 @@ func (s *namespaceSuite) TestHistoryAPIMetrics() {
 
 func (s *namespaceSuite) TestGetNamespace() {
 	register := namespace.NewMockRegistry(gomock.NewController(s.T()))
-	register.EXPECT().GetNamespace(namespace.Name("exist")).Return(nil, nil)
-	register.EXPECT().GetNamespace(namespace.Name("nonexist")).Return(nil, errors.New("not found"))
-	register.EXPECT().GetNamespaceName(namespace.ID("exist")).Return(namespace.Name("exist"), nil)
-	register.EXPECT().GetNamespaceName(namespace.ID("nonexist")).Return(namespace.EmptyName, errors.New("not found"))
+	register.EXPECT().GetNamespace(gomock.Any(), namespace.Name("exist")).Return(nil, nil)
+	register.EXPECT().GetNamespace(gomock.Any(), namespace.Name("nonexist")).Return(nil, errors.New("not found"))
+	register.EXPECT().GetNamespaceName(gomock.Any(), namespace.ID("exist")).Return(namespace.Name("exist"), nil)
+	register.EXPECT().GetNamespaceName(gomock.Any(), namespace.ID("nonexist")).Return(namespace.EmptyName, errors.New("not found"))
 	testCases := []struct {
 		method        interface{}
 		namespaceName namespace.Name
@@ -190,7 +191,7 @@ func (s *namespaceSuite) TestGetNamespace() {
 	}
 
 	for _, testCase := range testCases {
-		extractedNamespace := GetNamespace(register, testCase.method)
+		extractedNamespace := GetNamespace(context.Background(), register, testCase.method)
 		s.Equal(testCase.namespaceName, extractedNamespace)
 	}
 }

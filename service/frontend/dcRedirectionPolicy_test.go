@@ -371,8 +371,8 @@ func (s *selectedAPIsForwardingRedirectionPolicySuite) setupLocalNamespace() {
 		cluster.TestCurrentClusterName,
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.namespaceID).Return(namespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(s.namespace).Return(namespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.namespaceID).Return(namespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), s.namespace).Return(namespaceEntry, nil).AnyTimes()
 }
 
 func (s *selectedAPIsForwardingRedirectionPolicySuite) setupGlobalNamespaceWithOneReplicationCluster() {
@@ -389,8 +389,8 @@ func (s *selectedAPIsForwardingRedirectionPolicySuite) setupGlobalNamespaceWithO
 		1234, // not used
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.namespaceID).Return(namespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(s.namespace).Return(namespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.namespaceID).Return(namespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), s.namespace).Return(namespaceEntry, nil).AnyTimes()
 }
 
 func (s *selectedAPIsForwardingRedirectionPolicySuite) setupGlobalNamespaceWithTwoReplicationCluster(forwardingEnabled bool, isRecordActive bool) {
@@ -411,7 +411,7 @@ func (s *selectedAPIsForwardingRedirectionPolicySuite) setupGlobalNamespaceWithT
 		1234, // not used
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.namespaceID).Return(namespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(s.namespace).Return(namespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.namespaceID).Return(namespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), s.namespace).Return(namespaceEntry, nil).AnyTimes()
 	s.mockConfig.EnableNamespaceNotActiveAutoForwarding = dynamicconfig.GetBoolPropertyFnFilteredByNamespace(forwardingEnabled)
 }

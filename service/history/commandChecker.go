@@ -25,6 +25,7 @@
 package history
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -472,6 +473,7 @@ func (v *commandAttrValidator) validateCancelWorkflowExecutionAttributes(
 }
 
 func (v *commandAttrValidator) validateCancelExternalWorkflowExecutionAttributes(
+	ctx context.Context,
 	namespaceID namespace.ID,
 	targetNamespaceID namespace.ID,
 	initiatedChildExecutionsInSession map[string]struct{},
@@ -480,6 +482,7 @@ func (v *commandAttrValidator) validateCancelExternalWorkflowExecutionAttributes
 
 	const failedCause = enumspb.WORKFLOW_TASK_FAILED_CAUSE_BAD_REQUEST_CANCEL_EXTERNAL_WORKFLOW_EXECUTION_ATTRIBUTES
 	if err := v.validateCrossNamespaceCall(
+		ctx,
 		namespaceID,
 		targetNamespaceID,
 	); err != nil {
@@ -510,6 +513,7 @@ func (v *commandAttrValidator) validateCancelExternalWorkflowExecutionAttributes
 }
 
 func (v *commandAttrValidator) validateSignalExternalWorkflowExecutionAttributes(
+	ctx context.Context,
 	namespaceID namespace.ID,
 	targetNamespaceID namespace.ID,
 	attributes *commandpb.SignalExternalWorkflowExecutionCommandAttributes,
@@ -517,6 +521,7 @@ func (v *commandAttrValidator) validateSignalExternalWorkflowExecutionAttributes
 
 	const failedCause = enumspb.WORKFLOW_TASK_FAILED_CAUSE_BAD_SIGNAL_WORKFLOW_EXECUTION_ATTRIBUTES
 	if err := v.validateCrossNamespaceCall(
+		ctx,
 		namespaceID,
 		targetNamespaceID,
 	); err != nil {
@@ -751,6 +756,7 @@ func (v *commandAttrValidator) validateContinueAsNewWorkflowExecutionAttributes(
 }
 
 func (v *commandAttrValidator) validateStartChildExecutionAttributes(
+	ctx context.Context,
 	namespaceID namespace.ID,
 	targetNamespaceID namespace.ID,
 	targetNamespace namespace.Name,
@@ -761,6 +767,7 @@ func (v *commandAttrValidator) validateStartChildExecutionAttributes(
 
 	const failedCause = enumspb.WORKFLOW_TASK_FAILED_CAUSE_BAD_START_CHILD_EXECUTION_ATTRIBUTES
 	if err := v.validateCrossNamespaceCall(
+		ctx,
 		namespaceID,
 		targetNamespaceID,
 	); err != nil {
@@ -904,6 +911,7 @@ func (v *commandAttrValidator) validateWorkflowRetryPolicy(
 }
 
 func (v *commandAttrValidator) validateCrossNamespaceCall(
+	ctx context.Context,
 	namespaceID namespace.ID,
 	targetNamespaceID namespace.ID,
 ) error {
@@ -917,12 +925,12 @@ func (v *commandAttrValidator) validateCrossNamespaceCall(
 		return serviceerror.NewInvalidArgument("cross namespace commands are not allowed")
 	}
 
-	namespaceEntry, err := v.namespaceRegistry.GetNamespaceByID(namespaceID)
+	namespaceEntry, err := v.namespaceRegistry.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return err
 	}
 
-	targetNamespaceEntry, err := v.namespaceRegistry.GetNamespaceByID(targetNamespaceID)
+	targetNamespaceEntry, err := v.namespaceRegistry.GetNamespaceByID(ctx, targetNamespaceID)
 	if err != nil {
 		return err
 	}

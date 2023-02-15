@@ -178,7 +178,7 @@ func (t *transferQueueTaskExecutorBase) archiveVisibility(
 	visibilityMemo *commonpb.Memo,
 	searchAttributes *commonpb.SearchAttributes,
 ) error {
-	namespaceEntry, err := t.registry.GetNamespaceByID(namespaceID)
+	namespaceEntry, err := t.registry.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return err
 	}

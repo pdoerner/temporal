@@ -357,7 +357,7 @@ func (s *transactionMgrSuite) TestBackfillWorkflow_CurrentWorkflow_Passive_Open(
 	mutableState.EXPECT().IsCurrentWorkflowGuaranteed().Return(true).AnyTimes()
 	mutableState.EXPECT().IsWorkflowExecutionRunning().Return(true).AnyTimes()
 	mutableState.EXPECT().GetNamespaceEntry().Return(s.namespaceEntry).AnyTimes()
-	weContext.EXPECT().ReapplyEvents([]*persistence.WorkflowEvents{workflowEvents})
+	weContext.EXPECT().ReapplyEvents(ctx, []*persistence.WorkflowEvents{workflowEvents})
 	weContext.EXPECT().PersistWorkflowEvents(gomock.Any(), workflowEvents).Return(int64(0), nil)
 	weContext.EXPECT().UpdateWorkflowExecutionWithNew(
 		gomock.Any(), now, persistence.UpdateWorkflowModeUpdateCurrent, nil, nil, workflow.TransactionPolicyPassive, (*workflow.TransactionPolicy)(nil),
@@ -407,7 +407,7 @@ func (s *transactionMgrSuite) TestBackfillWorkflow_CurrentWorkflow_Passive_Close
 		NamespaceID: namespaceID.String(),
 		WorkflowID:  workflowID,
 	}).Return(&persistence.GetCurrentExecutionResponse{RunID: runID}, nil)
-	weContext.EXPECT().ReapplyEvents([]*persistence.WorkflowEvents{workflowEvents})
+	weContext.EXPECT().ReapplyEvents(ctx, []*persistence.WorkflowEvents{workflowEvents})
 	weContext.EXPECT().PersistWorkflowEvents(gomock.Any(), workflowEvents).Return(int64(0), nil)
 	weContext.EXPECT().UpdateWorkflowExecutionWithNew(
 		gomock.Any(), now, persistence.UpdateWorkflowModeUpdateCurrent, nil, nil, workflow.TransactionPolicyPassive, (*workflow.TransactionPolicy)(nil),
@@ -465,7 +465,7 @@ func (s *transactionMgrSuite) TestBackfillWorkflow_NotCurrentWorkflow_Active() {
 		NamespaceID: namespaceID.String(),
 		WorkflowID:  workflowID,
 	}).Return(&persistence.GetCurrentExecutionResponse{RunID: currentRunID}, nil)
-	weContext.EXPECT().ReapplyEvents([]*persistence.WorkflowEvents{workflowEvents})
+	weContext.EXPECT().ReapplyEvents(ctx, []*persistence.WorkflowEvents{workflowEvents})
 	weContext.EXPECT().PersistWorkflowEvents(gomock.Any(), workflowEvents).Return(int64(0), nil)
 	weContext.EXPECT().UpdateWorkflowExecutionWithNew(
 		gomock.Any(), now, persistence.UpdateWorkflowModeBypassCurrent, nil, nil, workflow.TransactionPolicyPassive, (*workflow.TransactionPolicy)(nil),
@@ -522,7 +522,7 @@ func (s *transactionMgrSuite) TestBackfillWorkflow_NotCurrentWorkflow_Passive() 
 		NamespaceID: namespaceID.String(),
 		WorkflowID:  workflowID,
 	}).Return(&persistence.GetCurrentExecutionResponse{RunID: currentRunID}, nil)
-	weContext.EXPECT().ReapplyEvents([]*persistence.WorkflowEvents{workflowEvents})
+	weContext.EXPECT().ReapplyEvents(ctx, []*persistence.WorkflowEvents{workflowEvents})
 	weContext.EXPECT().PersistWorkflowEvents(gomock.Any(), workflowEvents).Return(int64(0), nil)
 	weContext.EXPECT().UpdateWorkflowExecutionWithNew(
 		gomock.Any(), now, persistence.UpdateWorkflowModeBypassCurrent, nil, nil, workflow.TransactionPolicyPassive, (*workflow.TransactionPolicy)(nil),

@@ -346,7 +346,7 @@ func (s *Scavenger) cleanUpWorkflowPastRetention(
 	}
 
 	executionInfo := mutableState.GetExecutionInfo()
-	ns, err := s.registry.GetNamespaceByID(namespace.ID(executionInfo.GetNamespaceId()))
+	ns, err := s.registry.GetNamespaceByID(ctx, namespace.ID(executionInfo.GetNamespaceId()))
 	switch err.(type) {
 	case *serviceerror.NamespaceNotFound:
 		// TODO delete the workflow data after issue #3536 close

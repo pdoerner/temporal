@@ -166,22 +166,22 @@ func (s *transferQueueStandbyTaskExecutorSuite) SetupTest() {
 	s.mockNamespaceCache = s.mockShard.Resource.NamespaceCache
 	s.mockAdminClient = s.mockShard.Resource.RemoteAdminClient
 	s.mockSearchAttributesProvider = s.mockShard.Resource.SearchAttributesProvider
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(tests.NamespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.Namespace).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(tests.TargetNamespaceID).Return(tests.GlobalTargetNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.TargetNamespace).Return(tests.GlobalTargetNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(tests.ParentNamespaceID).Return(tests.GlobalParentNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.ParentNamespace).Return(tests.GlobalParentNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(tests.ChildNamespaceID).Return(tests.GlobalChildNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.ChildNamespace).Return(tests.GlobalChildNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(tests.StandbyNamespaceID).Return(tests.GlobalStandbyNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.StandbyNamespace).Return(tests.GlobalStandbyNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceName(tests.StandbyNamespaceID).Return(tests.StandbyNamespace, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(tests.StandbyWithVisibilityArchivalNamespaceID).
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.NamespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.Namespace).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.TargetNamespaceID).Return(tests.GlobalTargetNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.TargetNamespace).Return(tests.GlobalTargetNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.ParentNamespaceID).Return(tests.GlobalParentNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.ParentNamespace).Return(tests.GlobalParentNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.ChildNamespaceID).Return(tests.GlobalChildNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.ChildNamespace).Return(tests.GlobalChildNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.StandbyNamespaceID).Return(tests.GlobalStandbyNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.StandbyNamespace).Return(tests.GlobalStandbyNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceName(gomock.Any(), tests.StandbyNamespaceID).Return(tests.StandbyNamespace, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.StandbyWithVisibilityArchivalNamespaceID).
 		Return(tests.GlobalStandbyWithVisibilityArchivalNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.StandbyWithVisibilityArchivalNamespace).
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.StandbyWithVisibilityArchivalNamespace).
 		Return(tests.GlobalStandbyWithVisibilityArchivalNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceName(tests.StandbyWithVisibilityArchivalNamespaceID).
+	s.mockNamespaceCache.EXPECT().GetNamespaceName(gomock.Any(), tests.StandbyWithVisibilityArchivalNamespaceID).
 		Return(tests.StandbyWithVisibilityArchivalNamespace, nil).AnyTimes()
 	s.mockClusterMetadata.EXPECT().GetClusterID().Return(cluster.TestCurrentClusterInitialFailoverVersion).AnyTimes()
 	s.mockClusterMetadata.EXPECT().GetCurrentClusterName().Return(cluster.TestCurrentClusterName).AnyTimes()

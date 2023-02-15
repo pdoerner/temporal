@@ -27,6 +27,7 @@
 package client
 
 import (
+	"context"
 	"time"
 
 	"go.temporal.io/api/workflowservice/v1"
@@ -73,7 +74,7 @@ type (
 	}
 
 	// NamespaceIDToNameFunc maps a namespaceID to namespace name. Returns error when mapping is not possible.
-	NamespaceIDToNameFunc func(id namespace.ID) (namespace.Name, error)
+	NamespaceIDToNameFunc func(ctx context.Context, id namespace.ID) (namespace.Name, error)
 
 	rpcClientFactory struct {
 		rpcFactory            common.RPCFactory

@@ -25,6 +25,7 @@
 package matching
 
 import (
+	"context"
 	"math/rand"
 
 	enumspb "go.temporal.io/api/enums/v1"
@@ -48,6 +49,7 @@ type (
 		// to a parent partition in which case, no load balancing should be
 		// performed
 		PickWritePartition(
+			ctx context.Context,
 			namespaceID namespace.ID,
 			taskQueue taskqueuepb.TaskQueue,
 			taskQueueType enumspb.TaskQueueType,
@@ -58,6 +60,7 @@ type (
 		// Input is name of the original task queue as specified by caller. When
 		// forwardedFrom is non-empty, no load balancing should be done.
 		PickReadPartition(
+			ctx context.Context,
 			namespaceID namespace.ID,
 			taskQueue taskqueuepb.TaskQueue,
 			taskQueueType enumspb.TaskQueueType,
@@ -68,14 +71,14 @@ type (
 	defaultLoadBalancer struct {
 		nReadPartitions   dynamicconfig.IntPropertyFnWithTaskQueueInfoFilters
 		nWritePartitions  dynamicconfig.IntPropertyFnWithTaskQueueInfoFilters
-		namespaceIDToName func(id namespace.ID) (namespace.Name, error)
+		namespaceIDToName func(ctx context.Context, id namespace.ID) (namespace.Name, error)
 	}
 )
 
 // NewLoadBalancer returns an instance of matching load balancer that
 // can help distribute api calls across task queue partitions
 func NewLoadBalancer(
-	namespaceIDToName func(id namespace.ID) (namespace.Name, error),
+	namespaceIDToName func(ctx context.Context, id namespace.ID) (namespace.Name, error),
 	dc *dynamicconfig.Collection,
 ) LoadBalancer {
 	return &defaultLoadBalancer{
@@ -86,24 +89,27 @@ func NewLoadBalancer(
 }
 
 func (lb *defaultLoadBalancer) PickWritePartition(
+	ctx context.Context,
 	namespaceID namespace.ID,
 	taskQueue taskqueuepb.TaskQueue,
 	taskQueueType enumspb.TaskQueueType,
 	forwardedFrom string,
 ) string {
-	return lb.pickPartition(namespaceID, taskQueue, taskQueueType, forwardedFrom, lb.nWritePartitions)
+	return lb.pickPartition(ctx, namespaceID, taskQueue, taskQueueType, forwardedFrom, lb.nWritePartitions)
 }
 
 func (lb *defaultLoadBalancer) PickReadPartition(
+	ctx context.Context,
 	namespaceID namespace.ID,
 	taskQueue taskqueuepb.TaskQueue,
 	taskQueueType enumspb.TaskQueueType,
 	forwardedFrom string,
 ) string {
-	return lb.pickPartition(namespaceID, taskQueue, taskQueueType, forwardedFrom, lb.nReadPartitions)
+	return lb.pickPartition(ctx, namespaceID, taskQueue, taskQueueType, forwardedFrom, lb.nReadPartitions)
 }
 
 func (lb *defaultLoadBalancer) pickPartition(
+	ctx context.Context,
 	namespaceID namespace.ID,
 	taskQueue taskqueuepb.TaskQueue,
 	taskQueueType enumspb.TaskQueueType,
@@ -121,7 +127,7 @@ func (lb *defaultLoadBalancer) pickPartition(
 		return taskQueue.GetName()
 	}
 
-	nsName, err := lb.namespaceIDToName(namespaceID)
+	nsName, err := lb.namespaceIDToName(ctx, namespaceID)
 	if err != nil {
 		return taskQueue.GetName()
 	}

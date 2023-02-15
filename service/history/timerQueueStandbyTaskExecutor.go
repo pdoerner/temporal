@@ -94,7 +94,7 @@ func (t *timerQueueStandbyTaskExecutor) Execute(
 	task := executable.GetTask()
 	taskType := queues.GetStandbyTimerTaskTypeTagValue(task)
 	metricsTags := []metrics.Tag{
-		getNamespaceTagByID(t.shard.GetNamespaceRegistry(), task.GetNamespaceID()),
+		getNamespaceTagByID(ctx, t.shard.GetNamespaceRegistry(), task.GetNamespaceID()),
 		metrics.TaskTypeTag(taskType),
 		metrics.OperationTag(taskType), // for backward compatibility
 	}
@@ -501,6 +501,7 @@ func (t *timerQueueStandbyTaskExecutor) fetchHistoryFromRemote(
 	}
 
 	remoteClusterName, err := getRemoteClusterName(
+		ctx,
 		t.currentClusterName,
 		t.registry,
 		taskInfo.GetNamespaceID(),

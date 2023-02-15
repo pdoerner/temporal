@@ -116,8 +116,8 @@ func (s *nDCHistoryResenderSuite) SetupTest() {
 		},
 		1234,
 	)
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.namespaceID).Return(namespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(s.namespace).Return(namespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.namespaceID).Return(namespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), s.namespace).Return(namespaceEntry, nil).AnyTimes()
 	s.serializer = serialization.NewSerializer()
 
 	s.rereplicator = NewNDCHistoryResender(

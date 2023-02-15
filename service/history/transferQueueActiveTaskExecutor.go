@@ -115,6 +115,7 @@ func (t *transferQueueActiveTaskExecutor) Execute(
 	task := executable.GetTask()
 	taskType := queues.GetActiveTransferTaskTypeTagValue(task)
 	namespaceTag, replicationState := getNamespaceTagAndReplicationStateByID(
+		ctx,
 		t.shard.GetNamespaceRegistry(),
 		task.GetNamespaceID(),
 	)
@@ -475,7 +476,7 @@ func (t *transferQueueActiveTaskExecutor) processCancelExecution(
 	}
 	attributes := initiatedEvent.GetRequestCancelExternalWorkflowExecutionInitiatedEventAttributes()
 
-	targetNamespaceEntry, err := t.registry.GetNamespaceByID(namespace.ID(task.TargetNamespaceID))
+	targetNamespaceEntry, err := t.registry.GetNamespaceByID(ctx, namespace.ID(task.TargetNamespaceID))
 	if err != nil {
 		if _, isNotFound := err.(*serviceerror.NamespaceNotFound); !isNotFound {
 			return err
@@ -598,7 +599,7 @@ func (t *transferQueueActiveTaskExecutor) processSignalExecution(
 	}
 	attributes := initiatedEvent.GetSignalExternalWorkflowExecutionInitiatedEventAttributes()
 
-	targetNamespaceEntry, err := t.registry.GetNamespaceByID(namespace.ID(task.TargetNamespaceID))
+	targetNamespaceEntry, err := t.registry.GetNamespaceByID(ctx, namespace.ID(task.TargetNamespaceID))
 	if err != nil {
 		if _, isNotFound := err.(*serviceerror.NamespaceNotFound); !isNotFound {
 			return err
@@ -789,7 +790,7 @@ func (t *transferQueueActiveTaskExecutor) processStartChildExecution(
 	attributes := initiatedEvent.GetStartChildWorkflowExecutionInitiatedEventAttributes()
 
 	var parentNamespaceName namespace.Name
-	if namespaceEntry, err := t.registry.GetNamespaceByID(namespace.ID(task.NamespaceID)); err != nil {
+	if namespaceEntry, err := t.registry.GetNamespaceByID(ctx, namespace.ID(task.NamespaceID)); err != nil {
 		if _, isNotFound := err.(*serviceerror.NamespaceNotFound); !isNotFound {
 			return err
 		}
@@ -800,7 +801,7 @@ func (t *transferQueueActiveTaskExecutor) processStartChildExecution(
 	}
 
 	var targetNamespaceName namespace.Name
-	if namespaceEntry, err := t.registry.GetNamespaceByID(namespace.ID(task.TargetNamespaceID)); err != nil {
+	if namespaceEntry, err := t.registry.GetNamespaceByID(ctx, namespace.ID(task.TargetNamespaceID)); err != nil {
 		if _, isNotFound := err.(*serviceerror.NamespaceNotFound); !isNotFound {
 			return err
 		}
@@ -933,7 +934,7 @@ func (t *transferQueueActiveTaskExecutor) processResetWorkflow(
 
 	executionInfo := currentMutableState.GetExecutionInfo()
 	executionState := currentMutableState.GetExecutionState()
-	namespaceEntry, err := t.registry.GetNamespaceByID(namespace.ID(executionInfo.NamespaceId))
+	namespaceEntry, err := t.registry.GetNamespaceByID(ctx, namespace.ID(executionInfo.NamespaceId))
 	if err != nil {
 		return err
 	}
@@ -1459,7 +1460,7 @@ func (t *transferQueueActiveTaskExecutor) processParentClosePolicy(
 				// TODO (alex): Remove after childInfo.NamespaceId is back filled. Backward compatibility: old childInfo doesn't have NamespaceId set.
 				// TODO (alex): consider reverse lookup of namespace name from ID but namespace name is not actually used.
 				var err error
-				childNamespaceID, err = t.registry.GetNamespaceID(namespace.Name(childInfo.GetNamespace()))
+				childNamespaceID, err = t.registry.GetNamespaceID(ctx, namespace.Name(childInfo.GetNamespace()))
 				switch err.(type) {
 				case nil:
 				case *serviceerror.NamespaceNotFound:
@@ -1523,7 +1524,7 @@ func (t *transferQueueActiveTaskExecutor) applyParentClosePolicy(
 			// TODO (alex): Remove after childInfo.NamespaceId is back filled. Backward compatibility: old childInfo doesn't have NamespaceId set.
 			// TODO (alex): consider reverse lookup of namespace name from ID but namespace name is not actually used.
 			var err error
-			childNamespaceID, err = t.registry.GetNamespaceID(namespace.Name(childInfo.GetNamespace()))
+			childNamespaceID, err = t.registry.GetNamespaceID(ctx, namespace.Name(childInfo.GetNamespace()))
 			if err != nil {
 				return err
 			}
@@ -1552,7 +1553,7 @@ func (t *transferQueueActiveTaskExecutor) applyParentClosePolicy(
 			// TODO (alex): Remove after childInfo.NamespaceId is back filled. Backward compatibility: old childInfo doesn't have NamespaceId set.
 			// TODO (alex): consider reverse lookup of namespace name from ID but namespace name is not actually used.
 			var err error
-			childNamespaceID, err = t.registry.GetNamespaceID(namespace.Name(childInfo.GetNamespace()))
+			childNamespaceID, err = t.registry.GetNamespaceID(ctx, namespace.Name(childInfo.GetNamespace()))
 			if err != nil {
 				return err
 			}

@@ -25,6 +25,7 @@
 package interceptor
 
 import (
+	"context"
 	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/server/common/namespace"
 )
@@ -42,6 +43,7 @@ type (
 )
 
 func GetNamespace(
+	ctx context.Context,
 	namespaceRegistry namespace.Registry,
 	req interface{},
 ) namespace.Name {
@@ -52,7 +54,7 @@ func GetNamespace(
 		return namespace.Name(request.GetNamespace())
 	case NamespaceNameGetter:
 		namespaceName := namespace.Name(request.GetNamespace())
-		_, err := namespaceRegistry.GetNamespace(namespaceName)
+		_, err := namespaceRegistry.GetNamespace(ctx, namespaceName)
 		if err != nil {
 			return namespace.EmptyName
 		}
@@ -60,7 +62,7 @@ func GetNamespace(
 
 	case NamespaceIDGetter:
 		namespaceID := namespace.ID(request.GetNamespaceId())
-		namespaceName, err := namespaceRegistry.GetNamespaceName(namespaceID)
+		namespaceName, err := namespaceRegistry.GetNamespaceName(ctx, namespaceID)
 		if err != nil {
 			return namespace.EmptyName
 		}

@@ -94,6 +94,8 @@ const (
 	EnableEagerWorkflowStart = "system.enableEagerWorkflowStart"
 	// NamespaceCacheRefreshInterval is the key for namespace cache refresh interval dynamic config
 	NamespaceCacheRefreshInterval = "system.namespaceCacheRefreshInterval"
+	// NamespaceReadthroughConcurrency is the key for namespace readthrough to persistence concurrency
+	NamespaceReadthroughConcurrency = "system.namespaceReadthroughConcurrency"
 
 	// Whether the deadlock detector should dump goroutines
 	DeadlockDumpGoroutines = "system.deadlock.DumpGoroutines"

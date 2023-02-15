@@ -86,7 +86,7 @@ func (e *archivalQueueTaskExecutor) Execute(
 	task := executable.GetTask()
 	taskType := queues.GetArchivalTaskTypeTagValue(task)
 	tags = []metrics.Tag{
-		getNamespaceTagByID(e.shardContext.GetNamespaceRegistry(), task.GetNamespaceID()),
+		getNamespaceTagByID(ctx, e.shardContext.GetNamespaceRegistry(), task.GetNamespaceID()),
 		metrics.TaskTypeTag(taskType),
 		// OperationTag is for consistency on tags with other executors,
 		// since those tags will be used to emit a common set of metrics.

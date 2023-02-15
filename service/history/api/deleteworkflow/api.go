@@ -76,7 +76,7 @@ func Invoke(
 			// skip delete open workflow
 			return &historyservice.DeleteWorkflowExecutionResponse{}, nil
 		}
-		ns, err := shard.GetNamespaceRegistry().GetNamespaceByID(namespace.ID(request.GetNamespaceId()))
+		ns, err := shard.GetNamespaceRegistry().GetNamespaceByID(ctx, namespace.ID(request.GetNamespaceId()))
 		if err != nil {
 			return nil, err
 		}

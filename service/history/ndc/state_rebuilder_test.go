@@ -325,7 +325,7 @@ func (s *stateRebuilderSuite) TestRebuild() {
 		Size:           historySize2,
 	}, nil)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(targetNamespaceID).Return(namespace.NewGlobalNamespaceForTest(
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), targetNamespaceID).Return(namespace.NewGlobalNamespaceForTest(
 		&persistencespb.NamespaceInfo{Id: targetNamespaceID.String(), Name: targetNamespace.String()},
 		&persistencespb.NamespaceConfig{},
 		&persistencespb.NamespaceReplicationConfig{

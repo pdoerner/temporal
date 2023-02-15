@@ -25,6 +25,7 @@
 package namespace_test
 
 import (
+	"context"
 	"sync"
 	"testing"
 	"time"
@@ -191,17 +192,17 @@ func (s *registrySuite) TestListNamespace() {
 	s.registry.Start()
 	defer s.registry.Stop()
 
-	entryByName1, err := s.registry.GetNamespace(namespace.Name(namespaceRecord1.Namespace.Info.Name))
+	entryByName1, err := s.registry.GetNamespace(context.Background(), namespace.Name(namespaceRecord1.Namespace.Info.Name))
 	s.Nil(err)
 	s.Equal(entry1, entryByName1)
-	entryByID1, err := s.registry.GetNamespaceByID(namespace.ID(namespaceRecord1.Namespace.Info.Id))
+	entryByID1, err := s.registry.GetNamespaceByID(context.Background(), namespace.ID(namespaceRecord1.Namespace.Info.Id))
 	s.Nil(err)
 	s.Equal(entry1, entryByID1)
 
-	entryByName2, err := s.registry.GetNamespace(namespace.Name(namespaceRecord2.Namespace.Info.Name))
+	entryByName2, err := s.registry.GetNamespace(context.Background(), namespace.Name(namespaceRecord2.Namespace.Info.Name))
 	s.Nil(err)
 	s.Equal(entry2, entryByName2)
-	entryByID2, err := s.registry.GetNamespaceByID(namespace.ID(namespaceRecord2.Namespace.Info.Id))
+	entryByID2, err := s.registry.GetNamespaceByID(context.Background(), namespace.ID(namespaceRecord2.Namespace.Info.Id))
 	s.Nil(err)
 	s.Equal(entry2, entryByID2)
 }
@@ -486,14 +487,14 @@ func (s *registrySuite) TestGetTriggerListAndUpdateCache_ConcurrentAccess() {
 	startChan := make(chan struct{})
 	testGetFn := func() {
 		<-startChan
-		entryNew, err := s.registry.GetNamespaceByID(id)
+		entryNew, err := s.registry.GetNamespaceByID(context.Background(), id)
 		switch err.(type) {
 		case nil:
 			s.Equal(entryOld, entryNew)
 			waitGroup.Done()
 		case *serviceerror.NamespaceNotFound:
 			time.Sleep(4 * time.Second)
-			entryNew, err := s.registry.GetNamespaceByID(id)
+			entryNew, err := s.registry.GetNamespaceByID(context.Background(), id)
 			s.NoError(err)
 			s.Equal(entryOld, entryNew)
 			waitGroup.Done()
@@ -604,7 +605,7 @@ func (s *registrySuite) TestRemoveDeletedNamespace() {
 	)
 	wg.Wait()
 
-	ns2FromRegistry, err := s.registry.GetNamespace(namespace.Name(namespaceRecord2.Namespace.Info.Name))
+	ns2FromRegistry, err := s.registry.GetNamespace(context.Background(), namespace.Name(namespaceRecord2.Namespace.Info.Name))
 	s.NotNil(ns2FromRegistry)
 	s.NoError(err)
 
@@ -613,7 +614,7 @@ func (s *registrySuite) TestRemoveDeletedNamespace() {
 		Name: namespaceRecord1.Namespace.Info.Name,
 	}).Return(nil, serviceerror.NewNamespaceNotFound(namespaceRecord1.Namespace.Info.Name))
 
-	ns1FromRegistry, err := s.registry.GetNamespace(namespace.Name(namespaceRecord1.Namespace.Info.Name))
+	ns1FromRegistry, err := s.registry.GetNamespace(context.Background(), namespace.Name(namespaceRecord1.Namespace.Info.Name))
 	s.Nil(ns1FromRegistry)
 	s.Error(err)
 	var notFound *serviceerror.NamespaceNotFound
@@ -638,7 +639,7 @@ func (s *registrySuite) TestCacheByName() {
 
 	s.registry.Start()
 	defer s.registry.Stop()
-	ns, err := s.registry.GetNamespace(namespace.Name("foo"))
+	ns, err := s.registry.GetNamespace(context.Background(), namespace.Name("foo"))
 	s.NoError(err)
 	s.Equal(namespace.Name("foo"), ns.Name())
 }

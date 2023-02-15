@@ -93,6 +93,7 @@ func (v *mutableStateValidator) Validate(
 
 	// First， to check if the data is expired on retention time.
 	retentionResult, err := v.validateRetention(
+		ctx,
 		mutableState.GetExecutionInfo(),
 		mutableState.GetExecutionState().GetState(),
 	)
@@ -246,6 +247,7 @@ func (v *mutableStateValidator) validateID(
 }
 
 func (v *mutableStateValidator) validateRetention(
+	ctx context.Context,
 	executionInfo *persistencespb.WorkflowExecutionInfo,
 	executionState enums.WorkflowExecutionState,
 ) (*MutableStateValidationResult, error) {
@@ -260,7 +262,7 @@ func (v *mutableStateValidator) validateRetention(
 	}
 
 	ttl := time.Now().UTC().Sub(timestamp.TimeValue(finalUpdateTime))
-	ns, err := v.registry.GetNamespaceByID(namespace.ID(executionInfo.GetNamespaceId()))
+	ns, err := v.registry.GetNamespaceByID(ctx, namespace.ID(executionInfo.GetNamespaceId()))
 	if err != nil {
 		return nil, err
 	}

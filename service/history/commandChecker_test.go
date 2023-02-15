@@ -25,6 +25,7 @@
 package history
 
 import (
+	"context"
 	"math/rand"
 	"testing"
 	"time"
@@ -151,39 +152,39 @@ func (s *commandAttrValidatorSuite) TestValidateSignalExternalWorkflowExecutionA
 		cluster.TestCurrentClusterName,
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testNamespaceID).Return(namespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testTargetNamespaceID).Return(targetNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testNamespaceID).Return(namespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testTargetNamespaceID).Return(targetNamespaceEntry, nil).AnyTimes()
 
 	var attributes *commandpb.SignalExternalWorkflowExecutionCommandAttributes
 
-	fc, err := s.validator.validateSignalExternalWorkflowExecutionAttributes(s.testNamespaceID, s.testTargetNamespaceID, attributes)
+	fc, err := s.validator.validateSignalExternalWorkflowExecutionAttributes(context.Background(), s.testNamespaceID, s.testTargetNamespaceID, attributes)
 	s.EqualError(err, "SignalExternalWorkflowExecutionCommandAttributes is not set on command.")
 	s.Equal(enumspb.WORKFLOW_TASK_FAILED_CAUSE_BAD_SIGNAL_WORKFLOW_EXECUTION_ATTRIBUTES, fc)
 
 	attributes = &commandpb.SignalExternalWorkflowExecutionCommandAttributes{}
-	fc, err = s.validator.validateSignalExternalWorkflowExecutionAttributes(s.testNamespaceID, s.testTargetNamespaceID, attributes)
+	fc, err = s.validator.validateSignalExternalWorkflowExecutionAttributes(context.Background(), s.testNamespaceID, s.testTargetNamespaceID, attributes)
 	s.EqualError(err, "Execution is nil on command.")
 	s.Equal(enumspb.WORKFLOW_TASK_FAILED_CAUSE_BAD_SIGNAL_WORKFLOW_EXECUTION_ATTRIBUTES, fc)
 
 	attributes.Execution = &commonpb.WorkflowExecution{}
 	attributes.Execution.WorkflowId = "workflow-id"
-	fc, err = s.validator.validateSignalExternalWorkflowExecutionAttributes(s.testNamespaceID, s.testTargetNamespaceID, attributes)
+	fc, err = s.validator.validateSignalExternalWorkflowExecutionAttributes(context.Background(), s.testNamespaceID, s.testTargetNamespaceID, attributes)
 	s.EqualError(err, "SignalName is not set on command.")
 	s.Equal(enumspb.WORKFLOW_TASK_FAILED_CAUSE_BAD_SIGNAL_WORKFLOW_EXECUTION_ATTRIBUTES, fc)
 
 	attributes.Execution.RunId = "run-id"
-	fc, err = s.validator.validateSignalExternalWorkflowExecutionAttributes(s.testNamespaceID, s.testTargetNamespaceID, attributes)
+	fc, err = s.validator.validateSignalExternalWorkflowExecutionAttributes(context.Background(), s.testNamespaceID, s.testTargetNamespaceID, attributes)
 	s.EqualError(err, "Invalid RunId set on command.")
 	attributes.Execution.RunId = tests.RunID
 	s.Equal(enumspb.WORKFLOW_TASK_FAILED_CAUSE_BAD_SIGNAL_WORKFLOW_EXECUTION_ATTRIBUTES, fc)
 
 	attributes.SignalName = "my signal name"
-	fc, err = s.validator.validateSignalExternalWorkflowExecutionAttributes(s.testNamespaceID, s.testTargetNamespaceID, attributes)
+	fc, err = s.validator.validateSignalExternalWorkflowExecutionAttributes(context.Background(), s.testNamespaceID, s.testTargetNamespaceID, attributes)
 	s.NoError(err)
 	s.Equal(enumspb.WORKFLOW_TASK_FAILED_CAUSE_UNSPECIFIED, fc)
 
 	attributes.Input = payloads.EncodeString("test input")
-	fc, err = s.validator.validateSignalExternalWorkflowExecutionAttributes(s.testNamespaceID, s.testTargetNamespaceID, attributes)
+	fc, err = s.validator.validateSignalExternalWorkflowExecutionAttributes(context.Background(), s.testNamespaceID, s.testTargetNamespaceID, attributes)
 	s.NoError(err)
 	s.Equal(enumspb.WORKFLOW_TASK_FAILED_CAUSE_UNSPECIFIED, fc)
 }
@@ -285,10 +286,10 @@ func (s *commandAttrValidatorSuite) TestValidateCrossNamespaceCall_LocalToLocal(
 		cluster.TestCurrentClusterName,
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testNamespaceID).Return(namespaceEntry, nil)
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testNamespaceID).Return(namespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
 
-	err := s.validator.validateCrossNamespaceCall(s.testNamespaceID, s.testTargetNamespaceID)
+	err := s.validator.validateCrossNamespaceCall(context.Background(), s.testNamespaceID, s.testTargetNamespaceID)
 	s.Nil(err)
 }
 
@@ -308,10 +309,10 @@ func (s *commandAttrValidatorSuite) TestValidateCrossNamespaceCall_LocalToEffect
 		1234,
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testNamespaceID).Return(namespaceEntry, nil)
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testNamespaceID).Return(namespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
 
-	err := s.validator.validateCrossNamespaceCall(s.testNamespaceID, s.testTargetNamespaceID)
+	err := s.validator.validateCrossNamespaceCall(context.Background(), s.testNamespaceID, s.testTargetNamespaceID)
 	s.Nil(err)
 }
 
@@ -331,10 +332,10 @@ func (s *commandAttrValidatorSuite) TestValidateCrossNamespaceCall_LocalToEffect
 		1234,
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testNamespaceID).Return(namespaceEntry, nil)
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testNamespaceID).Return(namespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
 
-	err := s.validator.validateCrossNamespaceCall(s.testNamespaceID, s.testTargetNamespaceID)
+	err := s.validator.validateCrossNamespaceCall(context.Background(), s.testNamespaceID, s.testTargetNamespaceID)
 	s.IsType(&serviceerror.InvalidArgument{}, err)
 }
 
@@ -357,10 +358,10 @@ func (s *commandAttrValidatorSuite) TestValidateCrossNamespaceCall_LocalToGlobal
 		1234,
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testNamespaceID).Return(namespaceEntry, nil)
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testNamespaceID).Return(namespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
 
-	err := s.validator.validateCrossNamespaceCall(s.testNamespaceID, s.testTargetNamespaceID)
+	err := s.validator.validateCrossNamespaceCall(context.Background(), s.testNamespaceID, s.testTargetNamespaceID)
 	s.IsType(&serviceerror.InvalidArgument{}, err)
 }
 
@@ -380,10 +381,10 @@ func (s *commandAttrValidatorSuite) TestValidateCrossNamespaceCall_EffectiveLoca
 		cluster.TestCurrentClusterName,
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testNamespaceID).Return(namespaceEntry, nil)
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testNamespaceID).Return(namespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
 
-	err := s.validator.validateCrossNamespaceCall(s.testNamespaceID, s.testTargetNamespaceID)
+	err := s.validator.validateCrossNamespaceCall(context.Background(), s.testNamespaceID, s.testTargetNamespaceID)
 	s.Nil(err)
 }
 
@@ -403,10 +404,10 @@ func (s *commandAttrValidatorSuite) TestValidateCrossNamespaceCall_EffectiveLoca
 		cluster.TestCurrentClusterName,
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testNamespaceID).Return(namespaceEntry, nil)
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testNamespaceID).Return(namespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
 
-	err := s.validator.validateCrossNamespaceCall(s.testNamespaceID, s.testTargetNamespaceID)
+	err := s.validator.validateCrossNamespaceCall(context.Background(), s.testNamespaceID, s.testTargetNamespaceID)
 	s.IsType(&serviceerror.InvalidArgument{}, err)
 }
 
@@ -430,10 +431,10 @@ func (s *commandAttrValidatorSuite) TestValidateCrossNamespaceCall_EffectiveLoca
 		5678,
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testNamespaceID).Return(namespaceEntry, nil)
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testNamespaceID).Return(namespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
 
-	err := s.validator.validateCrossNamespaceCall(s.testNamespaceID, s.testTargetNamespaceID)
+	err := s.validator.validateCrossNamespaceCall(context.Background(), s.testNamespaceID, s.testTargetNamespaceID)
 	s.Nil(err)
 }
 
@@ -457,10 +458,10 @@ func (s *commandAttrValidatorSuite) TestValidateCrossNamespaceCall_EffectiveLoca
 		5678,
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testNamespaceID).Return(namespaceEntry, nil)
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testNamespaceID).Return(namespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
 
-	err := s.validator.validateCrossNamespaceCall(s.testNamespaceID, s.testTargetNamespaceID)
+	err := s.validator.validateCrossNamespaceCall(context.Background(), s.testNamespaceID, s.testTargetNamespaceID)
 	s.IsType(&serviceerror.InvalidArgument{}, err)
 }
 
@@ -489,10 +490,10 @@ func (s *commandAttrValidatorSuite) TestValidateCrossNamespaceCall_EffectiveLoca
 		1234,
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testNamespaceID).Return(namespaceEntry, nil)
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testNamespaceID).Return(namespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
 
-	err := s.validator.validateCrossNamespaceCall(s.testNamespaceID, s.testTargetNamespaceID)
+	err := s.validator.validateCrossNamespaceCall(context.Background(), s.testNamespaceID, s.testTargetNamespaceID)
 	s.IsType(&serviceerror.InvalidArgument{}, err)
 }
 
@@ -515,10 +516,10 @@ func (s *commandAttrValidatorSuite) TestValidateCrossNamespaceCall_GlobalToLocal
 		cluster.TestCurrentClusterName,
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testNamespaceID).Return(namespaceEntry, nil)
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testNamespaceID).Return(namespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
 
-	err := s.validator.validateCrossNamespaceCall(s.testNamespaceID, s.testTargetNamespaceID)
+	err := s.validator.validateCrossNamespaceCall(context.Background(), s.testNamespaceID, s.testTargetNamespaceID)
 	s.IsType(&serviceerror.InvalidArgument{}, err)
 }
 
@@ -547,10 +548,10 @@ func (s *commandAttrValidatorSuite) TestValidateCrossNamespaceCall_GlobalToEffec
 		1234,
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testNamespaceID).Return(namespaceEntry, nil)
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testNamespaceID).Return(namespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
 
-	err := s.validator.validateCrossNamespaceCall(s.testNamespaceID, s.testTargetNamespaceID)
+	err := s.validator.validateCrossNamespaceCall(context.Background(), s.testNamespaceID, s.testTargetNamespaceID)
 	s.IsType(&serviceerror.InvalidArgument{}, err)
 }
 
@@ -580,17 +581,17 @@ func (s *commandAttrValidatorSuite) TestValidateCrossNamespaceCall_GlobalToGloba
 		1234,
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testNamespaceID).Return(namespaceEntry, nil)
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testNamespaceID).Return(namespaceEntry, nil)
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.testTargetNamespaceID).Return(targetNamespaceEntry, nil)
 
-	err := s.validator.validateCrossNamespaceCall(s.testNamespaceID, s.testTargetNamespaceID)
+	err := s.validator.validateCrossNamespaceCall(context.Background(), s.testNamespaceID, s.testTargetNamespaceID)
 	s.IsType(&serviceerror.InvalidArgument{}, err)
 }
 
 func (s *commandAttrValidatorSuite) TestValidateCrossNamespaceCall_GlobalToGlobal_SameNamespace() {
 	targetNamespaceID := s.testNamespaceID
 
-	err := s.validator.validateCrossNamespaceCall(s.testNamespaceID, targetNamespaceID)
+	err := s.validator.validateCrossNamespaceCall(context.Background(), s.testNamespaceID, targetNamespaceID)
 	s.Nil(err)
 }
 

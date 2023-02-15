@@ -182,63 +182,63 @@ func (mr *MockRegistryMockRecorder) GetCacheSize() *gomock.Call {
 }
 
 // GetNamespace mocks base method.
-func (m *MockRegistry) GetNamespace(name Name) (*Namespace, error) {
+func (m *MockRegistry) GetNamespace(ctx context.Context, name Name) (*Namespace, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNamespace", name)
+	ret := m.ctrl.Call(m, "GetNamespace", ctx, name)
 	ret0, _ := ret[0].(*Namespace)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetNamespace indicates an expected call of GetNamespace.
-func (mr *MockRegistryMockRecorder) GetNamespace(name interface{}) *gomock.Call {
+func (mr *MockRegistryMockRecorder) GetNamespace(ctx, name interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNamespace", reflect.TypeOf((*MockRegistry)(nil).GetNamespace), name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNamespace", reflect.TypeOf((*MockRegistry)(nil).GetNamespace), ctx, name)
 }
 
 // GetNamespaceByID mocks base method.
-func (m *MockRegistry) GetNamespaceByID(id ID) (*Namespace, error) {
+func (m *MockRegistry) GetNamespaceByID(ctx context.Context, id ID) (*Namespace, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNamespaceByID", id)
+	ret := m.ctrl.Call(m, "GetNamespaceByID", ctx, id)
 	ret0, _ := ret[0].(*Namespace)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetNamespaceByID indicates an expected call of GetNamespaceByID.
-func (mr *MockRegistryMockRecorder) GetNamespaceByID(id interface{}) *gomock.Call {
+func (mr *MockRegistryMockRecorder) GetNamespaceByID(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNamespaceByID", reflect.TypeOf((*MockRegistry)(nil).GetNamespaceByID), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNamespaceByID", reflect.TypeOf((*MockRegistry)(nil).GetNamespaceByID), ctx, id)
 }
 
 // GetNamespaceID mocks base method.
-func (m *MockRegistry) GetNamespaceID(name Name) (ID, error) {
+func (m *MockRegistry) GetNamespaceID(ctx context.Context, name Name) (ID, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNamespaceID", name)
+	ret := m.ctrl.Call(m, "GetNamespaceID", ctx, name)
 	ret0, _ := ret[0].(ID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetNamespaceID indicates an expected call of GetNamespaceID.
-func (mr *MockRegistryMockRecorder) GetNamespaceID(name interface{}) *gomock.Call {
+func (mr *MockRegistryMockRecorder) GetNamespaceID(ctx, name interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNamespaceID", reflect.TypeOf((*MockRegistry)(nil).GetNamespaceID), name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNamespaceID", reflect.TypeOf((*MockRegistry)(nil).GetNamespaceID), ctx, name)
 }
 
 // GetNamespaceName mocks base method.
-func (m *MockRegistry) GetNamespaceName(id ID) (Name, error) {
+func (m *MockRegistry) GetNamespaceName(ctx context.Context, id ID) (Name, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNamespaceName", id)
+	ret := m.ctrl.Call(m, "GetNamespaceName", ctx, id)
 	ret0, _ := ret[0].(Name)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetNamespaceName indicates an expected call of GetNamespaceName.
-func (mr *MockRegistryMockRecorder) GetNamespaceName(id interface{}) *gomock.Call {
+func (mr *MockRegistryMockRecorder) GetNamespaceName(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNamespaceName", reflect.TypeOf((*MockRegistry)(nil).GetNamespaceName), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNamespaceName", reflect.TypeOf((*MockRegistry)(nil).GetNamespaceName), ctx, id)
 }
 
 // GetPingChecks mocks base method.

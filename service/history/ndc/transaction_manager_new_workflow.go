@@ -232,6 +232,7 @@ func (r *nDCTransactionMgrForNewWorkflowImpl) createAsZombie(
 	}
 
 	if err := targetWorkflow.GetContext().ReapplyEvents(
+		ctx,
 		targetWorkflowEventsSeq,
 	); err != nil {
 		return err

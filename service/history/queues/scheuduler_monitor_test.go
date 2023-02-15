@@ -75,7 +75,7 @@ func (s *schedulerMonitorSuite) SetupTest() {
 	s.mockTimerMetric = metrics.NewMockTimerIface(s.controller)
 	s.mockTimeSource = clock.NewEventTimeSource()
 
-	s.mockNamespaceRegistry.EXPECT().GetNamespaceName(gomock.Any()).Return(tests.Namespace, nil).AnyTimes()
+	s.mockNamespaceRegistry.EXPECT().GetNamespaceName(gomock.Any(), gomock.Any()).Return(tests.Namespace, nil).AnyTimes()
 	s.mockMetricsHandler.EXPECT().WithTags(gomock.Any()).Return(s.mockMetricsHandler).AnyTimes()
 	s.mockMetricsHandler.EXPECT().Timer(metrics.QueueScheduleLatency.GetMetricName()).Return(s.mockTimerMetric).AnyTimes()
 

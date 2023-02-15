@@ -589,7 +589,7 @@ func (s *activityReplicatorSuite) TestSyncActivity_WorkflowNotFound() {
 		WorkflowID:  workflowID,
 		RunID:       runID,
 	}).Return(nil, serviceerror.NewNotFound(""))
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(namespaceID).Return(
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), namespaceID).Return(
 		namespace.NewGlobalNamespaceForTest(
 			&persistencespb.NamespaceInfo{Id: namespaceID.String(), Name: namespaceName.String()},
 			&persistencespb.NamespaceConfig{Retention: timestamp.DurationFromDays(1)},
@@ -663,7 +663,7 @@ func (s *activityReplicatorSuite) TestSyncActivity_WorkflowClosed() {
 		enumsspb.WORKFLOW_EXECUTION_STATE_COMPLETED, enumspb.WORKFLOW_EXECUTION_STATUS_COMPLETED,
 	).AnyTimes()
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(namespaceID).Return(
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), namespaceID).Return(
 		namespace.NewGlobalNamespaceForTest(
 			&persistencespb.NamespaceInfo{Id: namespaceID.String(), Name: namespaceName.String()},
 			&persistencespb.NamespaceConfig{Retention: timestamp.DurationFromDays(1)},
@@ -738,7 +738,7 @@ func (s *activityReplicatorSuite) TestSyncActivity_ActivityNotFound() {
 	).AnyTimes()
 	s.mockMutableState.EXPECT().GetActivityInfo(scheduledEventID).Return(nil, false)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(namespaceID).Return(
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), namespaceID).Return(
 		namespace.NewGlobalNamespaceForTest(
 			&persistencespb.NamespaceInfo{Id: namespaceID.String(), Name: namespaceName.String()},
 			&persistencespb.NamespaceConfig{Retention: timestamp.DurationFromDays(1)},
@@ -831,7 +831,7 @@ func (s *activityReplicatorSuite) TestSyncActivity_ActivityFound_Zombie() {
 		(*workflow.TransactionPolicy)(nil),
 	).Return(nil)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(namespaceID).Return(
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(weContext, namespaceID).Return(
 		namespace.NewGlobalNamespaceForTest(
 			&persistencespb.NamespaceInfo{Id: namespaceID.String(), Name: namespaceName.String()},
 			&persistencespb.NamespaceConfig{Retention: timestamp.DurationFromDays(1)},
@@ -924,7 +924,7 @@ func (s *activityReplicatorSuite) TestSyncActivity_ActivityFound_NonZombie() {
 		(*workflow.TransactionPolicy)(nil),
 	).Return(nil)
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(namespaceID).Return(
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(weContext, namespaceID).Return(
 		namespace.NewGlobalNamespaceForTest(
 			&persistencespb.NamespaceInfo{Id: namespaceID.String(), Name: namespaceName.String()},
 			&persistencespb.NamespaceConfig{Retention: timestamp.DurationFromDays(1)},

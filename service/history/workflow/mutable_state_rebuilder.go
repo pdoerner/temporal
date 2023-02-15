@@ -136,7 +136,7 @@ func (b *MutableStateRebuilderImpl) ApplyEvents(
 			attributes := event.GetWorkflowExecutionStartedEventAttributes()
 			// TODO (alex): ParentWorkflowNamespaceId is back filled. Backward compatibility: old event doesn't have ParentNamespaceId set.
 			if attributes.GetParentWorkflowNamespaceId() == "" && attributes.GetParentWorkflowNamespace() != "" {
-				parentNamespaceEntry, err := b.namespaceRegistry.GetNamespace(namespace.Name(attributes.GetParentWorkflowNamespace()))
+				parentNamespaceEntry, err := b.namespaceRegistry.GetNamespace(ctx, namespace.Name(attributes.GetParentWorkflowNamespace()))
 				if err != nil {
 					return nil, err
 				}

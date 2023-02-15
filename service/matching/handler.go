@@ -120,7 +120,7 @@ func (h *Handler) newHandlerContext(
 ) *handlerContext {
 	return newHandlerContext(
 		ctx,
-		h.namespaceName(namespaceID),
+		h.namespaceName(ctx, namespaceID),
 		taskQueue,
 		h.metricsHandler,
 		operation,
@@ -403,8 +403,8 @@ func (h *Handler) GetTaskQueueMetadata(
 	return h.engine.GetTaskQueueMetadata(hCtx, request)
 }
 
-func (h *Handler) namespaceName(id namespace.ID) namespace.Name {
-	entry, err := h.namespaceRegistry.GetNamespaceByID(id)
+func (h *Handler) namespaceName(ctx context.Context, id namespace.ID) namespace.Name {
+	entry, err := h.namespaceRegistry.GetNamespaceByID(ctx, id)
 	if err != nil {
 		return ""
 	}
@@ -417,6 +417,6 @@ func (h *Handler) reportForwardedPerTaskQueueCounter(hCtx *handlerContext, names
 		Record(
 			1,
 			metrics.OperationTag(metrics.MatchingAddWorkflowTaskScope),
-			metrics.NamespaceTag(h.namespaceName(namespaceId).String()),
+			metrics.NamespaceTag(h.namespaceName(hCtx, namespaceId).String()),
 			metrics.ServiceRoleTag(metrics.MatchingRoleTagValue))
 }

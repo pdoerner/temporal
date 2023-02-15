@@ -72,7 +72,7 @@ func (s *callerInfoSuite) TestIntercept_CallerName() {
 	// testNamespaceID := namespace.NewID()
 	testNamespaceName := namespace.Name("test-namespace")
 	// s.mockRegistry.EXPECT().GetNamespaceName(testNamespaceID).Return(testNamespaceName, nil).AnyTimes()
-	s.mockRegistry.EXPECT().GetNamespace(gomock.Any()).Return(nil, nil).AnyTimes()
+	s.mockRegistry.EXPECT().GetNamespace(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 
 	testCases := []struct {
 		setupIncomingCtx   func() context.Context
@@ -142,7 +142,7 @@ func (s *callerInfoSuite) TestIntercept_CallerName() {
 }
 
 func (s *callerInfoSuite) TestIntercept_CallerType() {
-	s.mockRegistry.EXPECT().GetNamespace(gomock.Any()).Return(nil, nil).AnyTimes()
+	s.mockRegistry.EXPECT().GetNamespace(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 
 	testCases := []struct {
 		setupIncomingCtx   func() context.Context
@@ -208,7 +208,7 @@ func (s *callerInfoSuite) TestIntercept_CallOrigin() {
 	serverInfo := &grpc.UnaryServerInfo{
 		FullMethod: "/temporal/" + method,
 	}
-	s.mockRegistry.EXPECT().GetNamespace(gomock.Any()).Return(nil, nil).AnyTimes()
+	s.mockRegistry.EXPECT().GetNamespace(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 
 	testCases := []struct {
 		setupIncomingCtx   func() context.Context

@@ -268,7 +268,7 @@ func (h *OperatorHandlerImpl) addSearchAttributesSQL(
 	if nsName == "" {
 		return errNamespaceNotSet
 	}
-	ns, err := h.namespaceRegistry.GetNamespace(namespace.Name(nsName))
+	ns, err := h.namespaceRegistry.GetNamespace(ctx, namespace.Name(nsName))
 	if err != nil {
 		return serviceerror.NewUnavailable(fmt.Sprintf(errUnableToGetNamespaceInfoMessage, nsName))
 	}
@@ -393,7 +393,7 @@ func (h *OperatorHandlerImpl) removeSearchAttributesSQL(
 	if nsName == "" {
 		return errNamespaceNotSet
 	}
-	ns, err := h.namespaceRegistry.GetNamespace(namespace.Name(nsName))
+	ns, err := h.namespaceRegistry.GetNamespace(ctx, namespace.Name(nsName))
 	if err != nil {
 		return serviceerror.NewUnavailable(fmt.Sprintf(errUnableToGetNamespaceInfoMessage, nsName))
 	}
@@ -443,7 +443,7 @@ func (h *OperatorHandlerImpl) ListSearchAttributes(
 	if h.visibilityMgr.GetName() == elasticsearch.PersistenceName || indexName == "" {
 		return h.listSearchAttributesElasticsearch(ctx, indexName, searchAttributes)
 	}
-	return h.listSearchAttributesSQL(request, searchAttributes)
+	return h.listSearchAttributesSQL(ctx, request, searchAttributes)
 }
 
 func (h *OperatorHandlerImpl) listSearchAttributesElasticsearch(
@@ -469,6 +469,7 @@ func (h *OperatorHandlerImpl) listSearchAttributesElasticsearch(
 }
 
 func (h *OperatorHandlerImpl) listSearchAttributesSQL(
+	ctx context.Context,
 	request *operatorservice.ListSearchAttributesRequest,
 	searchAttributes searchattribute.NameTypeMap,
 ) (*operatorservice.ListSearchAttributesResponse, error) {
@@ -476,7 +477,7 @@ func (h *OperatorHandlerImpl) listSearchAttributesSQL(
 	if nsName == "" {
 		return nil, errNamespaceNotSet
 	}
-	ns, err := h.namespaceRegistry.GetNamespace(namespace.Name(nsName))
+	ns, err := h.namespaceRegistry.GetNamespace(ctx, namespace.Name(nsName))
 	if err != nil {
 		return nil, serviceerror.NewUnavailable(
 			fmt.Sprintf(errUnableToGetNamespaceInfoMessage, nsName),

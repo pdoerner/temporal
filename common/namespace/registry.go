@@ -136,10 +136,10 @@ type (
 	Registry interface {
 		common.Daemon
 		common.Pingable
-		GetNamespace(name Name) (*Namespace, error)
-		GetNamespaceByID(id ID) (*Namespace, error)
-		GetNamespaceID(name Name) (ID, error)
-		GetNamespaceName(id ID) (Name, error)
+		GetNamespace(ctx context.Context, name Name) (*Namespace, error)
+		GetNamespaceByID(ctx context.Context, id ID) (*Namespace, error)
+		GetNamespaceID(ctx context.Context, name Name) (ID, error)
+		GetNamespaceName(ctx context.Context, id ID) (Name, error)
 		GetCacheSize() (sizeOfCacheByName int64, sizeOfCacheByID int64)
 		// Registers callback for namespace state changes.
 		// StateChangeCallbackFn will be invoked for a new/deleted namespace or namespace that has
@@ -302,28 +302,29 @@ func (r *registry) UnregisterStateChangeCallback(key any) {
 
 // GetNamespace retrieves the information from the cache if it exists, otherwise retrieves the information from metadata
 // store and writes it to the cache with an expiry before returning back
-func (r *registry) GetNamespace(name Name) (*Namespace, error) {
+func (r *registry) GetNamespace(ctx context.Context, name Name) (*Namespace, error) {
 	if name == "" {
 		return nil, serviceerror.NewInvalidArgument("Namespace is empty.")
 	}
-	return r.getOrPutNamespace(name)
+	return r.getOrPutNamespace(ctx, name)
 }
 
 // GetNamespaceByID retrieves the information from the cache if it exists, otherwise retrieves the information from metadata
 // store and writes it to the cache with an expiry before returning back
-func (r *registry) GetNamespaceByID(id ID) (*Namespace, error) {
+func (r *registry) GetNamespaceByID(ctx context.Context, id ID) (*Namespace, error) {
 	if id == "" {
 		return nil, serviceerror.NewInvalidArgument("NamespaceID is empty.")
 	}
-	return r.getOrPutNamespaceByID(id)
+	return r.getOrPutNamespaceByID(ctx, id)
 }
 
 // GetNamespaceID retrieves namespaceID by using GetNamespace
 func (r *registry) GetNamespaceID(
+	ctx context.Context,
 	name Name,
 ) (ID, error) {
 
-	ns, err := r.GetNamespace(name)
+	ns, err := r.GetNamespace(ctx, name)
 	if err != nil {
 		return "", err
 	}
@@ -332,10 +333,11 @@ func (r *registry) GetNamespaceID(
 
 // GetNamespaceName returns namespace name given the namespace id
 func (r *registry) GetNamespaceName(
+	ctx context.Context,
 	id ID,
 ) (Name, error) {
 
-	ns, err := r.getOrPutNamespaceByID(id)
+	ns, err := r.getOrPutNamespaceByID(ctx, id)
 	if err != nil {
 		return "", err
 	}
@@ -492,7 +494,7 @@ func (r *registry) getNamespaceByIDLocked(id ID) (*Namespace, error) {
 
 // getOrPutNamespace retrieves the information from the cache if it exists or reads through
 // to the persistence layer and updates caches if it doesn't
-func (r *registry) getOrPutNamespace(name Name) (*Namespace, error) {
+func (r *registry) getOrPutNamespace(ctx context.Context, name Name) (*Namespace, error) {
 	// check caches
 	cachedNS, cachedErr := r.checkCachesByName(name)
 	if cachedNS != nil || cachedErr != nil {
@@ -511,7 +513,7 @@ func (r *registry) getOrPutNamespace(name Name) (*Namespace, error) {
 	}
 
 	// readthrough to persistence layer and update readthrough cache if not found
-	ns, err := r.getNamespaceByNamePersistence(name)
+	ns, err := r.getNamespaceByNamePersistence(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -541,7 +543,7 @@ func (r *registry) checkCachesByName(name Name) (*Namespace, error) {
 
 // getOrPutNamespaceByID retrieves the information from the cache if it exists or reads through
 // to the persistence layer and updates caches if it doesn't
-func (r *registry) getOrPutNamespaceByID(id ID) (*Namespace, error) {
+func (r *registry) getOrPutNamespaceByID(ctx context.Context, id ID) (*Namespace, error) {
 	// check caches
 	cachedNS, cachedErr := r.checkCachesByID(id)
 	if cachedNS != nil || cachedErr != nil {
@@ -560,7 +562,7 @@ func (r *registry) getOrPutNamespaceByID(id ID) (*Namespace, error) {
 	}
 
 	// readthrough to persistence layer and update readthrough cache if not found
-	ns, err := r.getNamespaceByIDPersistence(id)
+	ns, err := r.getNamespaceByIDPersistence(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -648,12 +650,12 @@ func (r *registry) updateReadthroughCache(identifier string, err error) {
 	r.readthroughErrorsCache.Put(identifier, err)
 }
 
-func (r *registry) getNamespaceByNamePersistence(name Name) (*Namespace, error) {
+func (r *registry) getNamespaceByNamePersistence(ctx context.Context, name Name) (*Namespace, error) {
 	request := &persistence.GetNamespaceRequest{
 		Name: name.String(),
 	}
 
-	ns, err := r.getNamespacePersistence(request)
+	ns, err := r.getNamespacePersistence(ctx, request)
 	if err != nil {
 		notFoundErr := serviceerror.NewNamespaceNotFound(name.String())
 		if _, ok := err.(*serviceerror.NamespaceNotFound); ok {
@@ -665,12 +667,12 @@ func (r *registry) getNamespaceByNamePersistence(name Name) (*Namespace, error) 
 	return ns, nil
 }
 
-func (r *registry) getNamespaceByIDPersistence(id ID) (*Namespace, error) {
+func (r *registry) getNamespaceByIDPersistence(ctx context.Context, id ID) (*Namespace, error) {
 	request := &persistence.GetNamespaceRequest{
 		ID: id.String(),
 	}
 
-	ns, err := r.getNamespacePersistence(request)
+	ns, err := r.getNamespacePersistence(ctx, request)
 	if err != nil {
 		notFoundErr := serviceerror.NewNamespaceNotFound(id.String())
 		if _, ok := err.(*serviceerror.NamespaceNotFound); ok {
@@ -682,12 +684,7 @@ func (r *registry) getNamespaceByIDPersistence(id ID) (*Namespace, error) {
 	return ns, nil
 }
 
-func (r *registry) getNamespacePersistence(request *persistence.GetNamespaceRequest) (*Namespace, error) {
-	ctx := headers.SetCallerInfo(
-		context.Background(),
-		headers.SystemBackgroundCallerInfo,
-	)
-
+func (r *registry) getNamespacePersistence(ctx context.Context, request *persistence.GetNamespaceRequest) (*Namespace, error) {
 	response, err := r.persistence.GetNamespace(ctx, request)
 	if err != nil {
 		return nil, err

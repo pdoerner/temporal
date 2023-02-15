@@ -94,7 +94,7 @@ func (s *WorkflowTaskHandlerCallbackSuite) SetupTest() {
 	mockShard.Resource.ShardMgr.EXPECT().AssertShardOwnership(gomock.Any(), gomock.Any()).AnyTimes()
 
 	mockNamespaceCache := mockShard.Resource.NamespaceCache
-	mockNamespaceCache.EXPECT().GetNamespaceByID(tests.NamespaceID).Return(tests.LocalNamespaceEntry, nil).AnyTimes()
+	mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.NamespaceID).Return(tests.LocalNamespaceEntry, nil).AnyTimes()
 	s.mockExecutionMgr = mockShard.Resource.ExecutionMgr
 	mockClusterMetadata := mockShard.Resource.ClusterMetadata
 	mockClusterMetadata.EXPECT().GetCurrentClusterName().Return(cluster.TestCurrentClusterName).AnyTimes()

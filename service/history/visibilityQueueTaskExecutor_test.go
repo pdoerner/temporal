@@ -135,9 +135,9 @@ func (s *visibilityQueueTaskExecutorSuite) SetupTest() {
 	s.mockVisibilityMgr = manager.NewMockVisibilityManager(s.controller)
 
 	mockNamespaceCache := s.mockShard.Resource.NamespaceCache
-	mockNamespaceCache.EXPECT().GetNamespaceByID(tests.NamespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
-	mockNamespaceCache.EXPECT().GetNamespace(tests.Namespace).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
-	mockNamespaceCache.EXPECT().GetNamespaceName(tests.NamespaceID).Return(tests.Namespace, nil).AnyTimes()
+	mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.NamespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.Namespace).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	mockNamespaceCache.EXPECT().GetNamespaceName(gomock.Any(), tests.NamespaceID).Return(tests.Namespace, nil).AnyTimes()
 
 	mockClusterMetadata := s.mockShard.Resource.ClusterMetadata
 	mockClusterMetadata.EXPECT().GetCurrentClusterName().Return(cluster.TestCurrentClusterName).AnyTimes()

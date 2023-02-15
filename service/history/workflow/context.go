@@ -82,6 +82,7 @@ type (
 		SetHistorySize(size int64)
 
 		ReapplyEvents(
+			ctx context.Context,
 			eventBatches []*persistence.WorkflowEvents,
 		) error
 
@@ -233,8 +234,9 @@ func (c *ContextImpl) GetWorkflowKey() definition.WorkflowKey {
 	return c.workflowKey
 }
 
-func (c *ContextImpl) GetNamespace() namespace.Name {
+func (c *ContextImpl) GetNamespace(ctx context.Context) namespace.Name {
 	namespaceEntry, err := c.shard.GetNamespaceRegistry().GetNamespaceByID(
+		ctx,
 		namespace.ID(c.workflowKey.NamespaceID),
 	)
 	if err != nil {
@@ -261,6 +263,7 @@ func (c *ContextImpl) LoadExecutionStats(ctx context.Context) (*persistencespb.E
 
 func (c *ContextImpl) LoadMutableState(ctx context.Context) (MutableState, error) {
 	namespaceEntry, err := c.shard.GetNamespaceRegistry().GetNamespaceByID(
+		ctx,
 		namespace.ID(c.workflowKey.NamespaceID),
 	)
 	if err != nil {
@@ -394,6 +397,7 @@ func (c *ContextImpl) ConflictResolveWorkflowExecution(
 	}()
 
 	resetWorkflow, resetWorkflowEventsSeq, err := resetMutableState.CloseTransactionAsSnapshot(
+		ctx,
 		now,
 		TransactionPolicyPassive,
 	)
@@ -415,6 +419,7 @@ func (c *ContextImpl) ConflictResolveWorkflowExecution(
 		}()
 
 		newWorkflow, newWorkflowEventsSeq, err = newMutableState.CloseTransactionAsSnapshot(
+			ctx,
 			now,
 			TransactionPolicyPassive,
 		)
@@ -437,6 +442,7 @@ func (c *ContextImpl) ConflictResolveWorkflowExecution(
 		}()
 
 		currentWorkflow, currentWorkflowEventsSeq, err = currentMutableState.CloseTransactionAsMutation(
+			ctx,
 			now,
 			*currentTransactionPolicy,
 		)
@@ -449,6 +455,7 @@ func (c *ContextImpl) ConflictResolveWorkflowExecution(
 	}
 
 	if err := c.conflictResolveEventReapply(
+		ctx,
 		conflictResolveMode,
 		resetWorkflowEventsSeq,
 		newWorkflowEventsSeq,
@@ -590,6 +597,7 @@ func (c *ContextImpl) UpdateWorkflowExecutionWithNew(
 	}()
 
 	currentWorkflow, currentWorkflowEventsSeq, err := c.MutableState.CloseTransactionAsMutation(
+		ctx,
 		now,
 		currentWorkflowTransactionPolicy,
 	)
@@ -610,6 +618,7 @@ func (c *ContextImpl) UpdateWorkflowExecutionWithNew(
 		}()
 
 		newWorkflow, newWorkflowEventsSeq, err = newMutableState.CloseTransactionAsSnapshot(
+			ctx,
 			now,
 			*newWorkflowTransactionPolicy,
 		)
@@ -630,6 +639,7 @@ func (c *ContextImpl) UpdateWorkflowExecutionWithNew(
 	}
 
 	if err := c.updateWorkflowExecutionEventReapply(
+		ctx,
 		updateMode,
 		currentWorkflowEventsSeq,
 		newWorkflowEventsSeq,
@@ -659,7 +669,7 @@ func (c *ContextImpl) UpdateWorkflowExecutionWithNew(
 	emitStateTransitionCount(c.metricsHandler, c.clusterMetadata, newMutableState)
 
 	// finally emit session stats
-	namespace := c.GetNamespace()
+	namespace := c.GetNamespace(ctx)
 	emitWorkflowHistoryStats(
 		c.metricsHandler,
 		namespace,
@@ -678,6 +688,7 @@ func (c *ContextImpl) SetWorkflowExecution(ctx context.Context, now time.Time) (
 	}()
 
 	resetWorkflowSnapshot, resetWorkflowEventsSeq, err := c.MutableState.CloseTransactionAsSnapshot(
+		ctx,
 		now,
 		TransactionPolicyPassive,
 	)
@@ -746,6 +757,7 @@ func (c *ContextImpl) mergeContinueAsNewReplicationTasks(
 }
 
 func (c *ContextImpl) updateWorkflowExecutionEventReapply(
+	ctx context.Context,
 	updateMode persistence.UpdateWorkflowMode,
 	eventBatch1 []*persistence.WorkflowEvents,
 	eventBatch2 []*persistence.WorkflowEvents,
@@ -758,10 +770,11 @@ func (c *ContextImpl) updateWorkflowExecutionEventReapply(
 	var eventBatches []*persistence.WorkflowEvents
 	eventBatches = append(eventBatches, eventBatch1...)
 	eventBatches = append(eventBatches, eventBatch2...)
-	return c.ReapplyEvents(eventBatches)
+	return c.ReapplyEvents(ctx, eventBatches)
 }
 
 func (c *ContextImpl) conflictResolveEventReapply(
+	ctx context.Context,
 	conflictResolveMode persistence.ConflictResolveWorkflowMode,
 	eventBatch1 []*persistence.WorkflowEvents,
 	eventBatch2 []*persistence.WorkflowEvents,
@@ -774,10 +787,11 @@ func (c *ContextImpl) conflictResolveEventReapply(
 	var eventBatches []*persistence.WorkflowEvents
 	eventBatches = append(eventBatches, eventBatch1...)
 	eventBatches = append(eventBatches, eventBatch2...)
-	return c.ReapplyEvents(eventBatches)
+	return c.ReapplyEvents(ctx, eventBatches)
 }
 
 func (c *ContextImpl) ReapplyEvents(
+	ctx context.Context,
 	eventBatches []*persistence.WorkflowEvents,
 ) error {
 
@@ -818,7 +832,7 @@ func (c *ContextImpl) ReapplyEvents(
 	}
 	namespaceRegistry := c.shard.GetNamespaceRegistry()
 	serializer := c.shard.GetPayloadSerializer()
-	namespaceEntry, err := namespaceRegistry.GetNamespaceByID(namespaceID)
+	namespaceEntry, err := namespaceRegistry.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return err
 	}
@@ -876,7 +890,7 @@ func (c *ContextImpl) ReapplyEvents(
 func (c *ContextImpl) enforceSizeCheck(
 	ctx context.Context,
 ) (bool, error) {
-	namespaceName := c.GetNamespace().String()
+	namespaceName := c.GetNamespace(ctx).String()
 	historySizeLimitWarn := c.config.HistorySizeLimitWarn(namespaceName)
 	historySizeLimitError := c.config.HistorySizeLimitError(namespaceName)
 	historyCountLimitWarn := c.config.HistoryCountLimitWarn(namespaceName)

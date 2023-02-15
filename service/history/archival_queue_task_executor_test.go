@@ -380,9 +380,9 @@ func TestArchivalQueueTaskExecutor(t *testing.T) {
 				},
 				123,
 			)
-			namespaceRegistry.EXPECT().GetNamespaceName(namespaceEntry.ID()).
+			namespaceRegistry.EXPECT().GetNamespaceName(shardContext, namespaceEntry.ID()).
 				Return(namespaceEntry.Name(), nil).AnyTimes()
-			namespaceRegistry.EXPECT().GetNamespaceByID(namespaceEntry.ID()).
+			namespaceRegistry.EXPECT().GetNamespaceByID(shardContext, namespaceEntry.ID()).
 				Return(namespaceEntry, p.GetNamespaceByIDError).AnyTimes()
 
 			if p.MutableStateExists {

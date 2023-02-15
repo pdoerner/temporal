@@ -302,7 +302,7 @@ func (r *HistoryReplicatorImpl) ApplyWorkflowState(
 		return err
 	}
 
-	ns, err := r.namespaceRegistry.GetNamespaceByID(namespaceID)
+	ns, err := r.namespaceRegistry.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return err
 	}
@@ -427,7 +427,7 @@ func (r *HistoryReplicatorImpl) applyStartEvents(
 	task replicationTask,
 ) error {
 
-	namespaceEntry, err := r.namespaceRegistry.GetNamespaceByID(task.getNamespaceID())
+	namespaceEntry, err := r.namespaceRegistry.GetNamespaceByID(ctx, task.getNamespaceID())
 	if err != nil {
 		return err
 	}

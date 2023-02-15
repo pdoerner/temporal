@@ -81,8 +81,8 @@ func (s *executableSuite) SetupTest() {
 	s.mockNamespaceRegistry = namespace.NewMockRegistry(s.controller)
 	s.mockClusterMetadata = cluster.NewMockMetadata(s.controller)
 
-	s.mockNamespaceRegistry.EXPECT().GetNamespaceName(gomock.Any()).Return(tests.Namespace, nil).AnyTimes()
-	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(gomock.Any()).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceRegistry.EXPECT().GetNamespaceName(gomock.Any(), gomock.Any()).Return(tests.Namespace, nil).AnyTimes()
+	s.mockNamespaceRegistry.EXPECT().GetNamespaceByID(gomock.Any(), gomock.Any()).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
 	s.mockClusterMetadata.EXPECT().GetCurrentClusterName().Return(cluster.TestCurrentClusterName).AnyTimes()
 
 	s.timeSource = clock.NewEventTimeSource()

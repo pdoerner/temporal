@@ -63,7 +63,7 @@ func (e *executorWrapper) Execute(
 	ctx context.Context,
 	executable Executable,
 ) ([]metrics.Tag, bool, error) {
-	if e.isActiveTask(executable) {
+	if e.isActiveTask(ctx, executable) {
 		return e.activeExecutor.Execute(ctx, executable)
 	}
 
@@ -71,12 +71,13 @@ func (e *executorWrapper) Execute(
 }
 
 func (e *executorWrapper) isActiveTask(
+	ctx context.Context,
 	executable Executable,
 ) bool {
 	// Following is the existing task allocator logic for verifying active task
 
 	namespaceID := executable.GetNamespaceID()
-	entry, err := e.registry.GetNamespaceByID(namespace.ID(namespaceID))
+	entry, err := e.registry.GetNamespaceByID(ctx, namespace.ID(namespaceID))
 	if err != nil {
 		e.logger.Warn("Unable to find namespace, process task as active.", tag.WorkflowNamespaceID(namespaceID), tag.Value(executable.GetTask()))
 		return true

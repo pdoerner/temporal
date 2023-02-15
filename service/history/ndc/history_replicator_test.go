@@ -198,7 +198,7 @@ func (s *historyReplicatorSuite) Test_ApplyWorkflowState_BrandNew() {
 	s.mockExecutionManager.EXPECT().NewHistoryBranch(gomock.Any(), gomock.Any()).Return(&persistence.NewHistoryBranchResponse{
 		BranchToken: historyBranch.GetData(),
 	}, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(namespace.ID(namespaceID)).Return(namespace.NewNamespaceForTest(
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(mockWeCtx, namespace.ID(namespaceID)).Return(namespace.NewNamespaceForTest(
 		&persistencespb.NamespaceInfo{Name: namespaceName},
 		nil,
 		false,
@@ -301,7 +301,7 @@ func (s *historyReplicatorSuite) Test_ApplyWorkflowState_Ancestors() {
 		gomock.Any(),
 		[]*persistence.WorkflowEvents{},
 	).Return(nil)
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(namespace.ID(namespaceID)).Return(namespace.NewNamespaceForTest(
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(mockWeCtx, namespace.ID(namespaceID)).Return(namespace.NewNamespaceForTest(
 		&persistencespb.NamespaceInfo{Name: namespaceName},
 		nil,
 		false,

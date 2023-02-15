@@ -149,9 +149,9 @@ func (s *engine2Suite) SetupTest() {
 	s.mockClusterMetadata = s.mockShard.Resource.ClusterMetadata
 
 	s.mockEventsCache = s.mockShard.MockEventsCache
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(tests.NamespaceID).Return(tests.LocalNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(tests.ParentNamespaceID).Return(tests.GlobalParentNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.ChildNamespace).Return(tests.GlobalChildNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.NamespaceID).Return(tests.LocalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.ParentNamespaceID).Return(tests.GlobalParentNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.ChildNamespace).Return(tests.GlobalChildNamespaceEntry, nil).AnyTimes()
 	s.mockEventsCache.EXPECT().PutEvent(gomock.Any(), gomock.Any()).AnyTimes()
 	s.mockClusterMetadata.EXPECT().GetClusterID().Return(tests.Version).AnyTimes()
 	s.mockClusterMetadata.EXPECT().IsVersionFromSameCluster(tests.Version, tests.Version).Return(true).AnyTimes()
@@ -903,7 +903,7 @@ func (s *engine2Suite) TestRespondWorkflowTaskCompleted_StartChildWithSearchAttr
 	gwmsResponse := &persistence.GetWorkflowExecutionResponse{State: wfMs}
 
 	s.mockExecutionMgr.EXPECT().GetWorkflowExecution(gomock.Any(), gomock.Any()).Return(gwmsResponse, nil)
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.Namespace).Return(tests.LocalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.Namespace).Return(tests.LocalNamespaceEntry, nil).AnyTimes()
 
 	s.mockExecutionMgr.EXPECT().UpdateWorkflowExecution(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, request *persistence.UpdateWorkflowExecutionRequest) (*persistence.UpdateWorkflowExecutionResponse, error) {
 		eventsToSave := request.UpdateWorkflowEvents[0].Events
@@ -963,7 +963,7 @@ func (s *engine2Suite) TestRespondWorkflowTaskCompleted_StartChildWorkflow_Excee
 		identity,
 	)
 
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.Namespace).Return(tests.LocalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.Namespace).Return(tests.LocalNamespaceEntry, nil).AnyTimes()
 
 	var commands []*commandpb.Command
 	for i := 0; i < 6; i++ {

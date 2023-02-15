@@ -125,7 +125,7 @@ func (r *StateRebuilderImpl) Rebuild(
 		baseBranchToken,
 	))
 
-	namespaceEntry, err := r.namespaceRegistry.GetNamespaceByID(namespace.ID(targetWorkflowIdentifier.NamespaceID))
+	namespaceEntry, err := r.namespaceRegistry.GetNamespaceByID(ctx, namespace.ID(targetWorkflowIdentifier.NamespaceID))
 	if err != nil {
 		return nil, 0, err
 	}

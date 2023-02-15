@@ -210,6 +210,7 @@ func NamespaceRegistryProvider(
 		metadataManager,
 		clusterMetadata.IsGlobalNamespaceEnabled(),
 		dynamicCollection.GetDurationProperty(dynamicconfig.NamespaceCacheRefreshInterval, 10*time.Second),
+		dynamicCollection.GetIntProperty(dynamicconfig.NamespaceReadthroughConcurrency, 10),
 		metricsHandler,
 		logger,
 	)

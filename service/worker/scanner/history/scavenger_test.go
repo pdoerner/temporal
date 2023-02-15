@@ -275,7 +275,7 @@ func (s *ScavengerTestSuite) TestNoGarbageTwoPages() {
 			},
 		},
 	}
-	s.mockRegistry.EXPECT().GetNamespaceByID(gomock.Any()).Return(mockedNamespace, nil).AnyTimes()
+	s.mockRegistry.EXPECT().GetNamespaceByID(gomock.Any(), gomock.Any()).Return(mockedNamespace, nil).AnyTimes()
 	s.mockHistoryClient.EXPECT().DescribeMutableState(gomock.Any(), &historyservice.DescribeMutableStateRequest{
 		NamespaceId: "namespaceID1",
 		Execution: &commonpb.WorkflowExecution{
@@ -473,7 +473,7 @@ func (s *ScavengerTestSuite) TestMixesTwoPages() {
 			},
 		},
 	}
-	s.mockRegistry.EXPECT().GetNamespaceByID(gomock.Any()).Return(mockedNamespace, nil).AnyTimes()
+	s.mockRegistry.EXPECT().GetNamespaceByID(gomock.Any(), gomock.Any()).Return(mockedNamespace, nil).AnyTimes()
 	s.mockHistoryClient.EXPECT().DescribeMutableState(gomock.Any(), &historyservice.DescribeMutableStateRequest{
 		NamespaceId: "namespaceID3",
 		Execution: &commonpb.WorkflowExecution{
@@ -615,7 +615,7 @@ func (s *ScavengerTestSuite) TestDeleteWorkflowAfterRetention() {
 			},
 		},
 	}
-	s.mockRegistry.EXPECT().GetNamespaceByID(gomock.Any()).Return(mockedNamespace, nil).AnyTimes()
+	s.mockRegistry.EXPECT().GetNamespaceByID(gomock.Any(), gomock.Any()).Return(mockedNamespace, nil).AnyTimes()
 	s.mockHistoryClient.EXPECT().DescribeMutableState(gomock.Any(), &historyservice.DescribeMutableStateRequest{
 		NamespaceId: "namespaceID1",
 		Execution: &commonpb.WorkflowExecution{

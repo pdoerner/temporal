@@ -137,7 +137,7 @@ func (ti *TelemetryInterceptor) Intercept(
 	handler grpc.UnaryHandler,
 ) (interface{}, error) {
 	_, methodName := SplitMethodName(info.FullMethod)
-	metricsHandler, logTags := ti.metricsHandlerLogTags(req, info.FullMethod, methodName)
+	metricsHandler, logTags := ti.metricsHandlerLogTags(ctx, req, info.FullMethod, methodName)
 
 	ctx = context.WithValue(ctx, metricsCtxKey, metricsHandler)
 	metricsHandler.Counter(metrics.ServiceRequests.GetMetricName()).Record(1)
@@ -231,6 +231,7 @@ func (ti *TelemetryInterceptor) emitActionMetric(
 }
 
 func (ti *TelemetryInterceptor) metricsHandlerLogTags(
+	ctx context.Context,
 	req interface{},
 	fullMethod string,
 	methodName string,
@@ -238,7 +239,7 @@ func (ti *TelemetryInterceptor) metricsHandlerLogTags(
 
 	overridedMethodName := ti.overrideOperationTag(fullMethod, methodName, req)
 
-	nsName := GetNamespace(ti.namespaceRegistry, req)
+	nsName := GetNamespace(ctx, ti.namespaceRegistry, req)
 	if nsName == "" {
 		return ti.metricsHandler.WithTags(metrics.OperationTag(overridedMethodName), metrics.NamespaceUnknownTag()),
 			[]tag.Tag{tag.Operation(overridedMethodName)}

@@ -3904,11 +3904,13 @@ func (ms *MutableStateImpl) StartTransaction(
 }
 
 func (ms *MutableStateImpl) CloseTransactionAsMutation(
+	ctx context.Context,
 	now time.Time,
 	transactionPolicy TransactionPolicy,
 ) (*persistence.WorkflowMutation, []*persistence.WorkflowEvents, error) {
 
 	if err := ms.prepareCloseTransaction(
+		ctx,
 		transactionPolicy,
 	); err != nil {
 		return nil, nil, err
@@ -3982,11 +3984,13 @@ func (ms *MutableStateImpl) CloseTransactionAsMutation(
 }
 
 func (ms *MutableStateImpl) CloseTransactionAsSnapshot(
+	ctx context.Context,
 	now time.Time,
 	transactionPolicy TransactionPolicy,
 ) (*persistence.WorkflowSnapshot, []*persistence.WorkflowEvents, error) {
 
 	if err := ms.prepareCloseTransaction(
+		ctx,
 		transactionPolicy,
 	); err != nil {
 		return nil, nil, err
@@ -4076,6 +4080,7 @@ func (ms *MutableStateImpl) GenerateMigrationTasks() (tasks.Task, error) {
 }
 
 func (ms *MutableStateImpl) prepareCloseTransaction(
+	ctx context.Context,
 	transactionPolicy TransactionPolicy,
 ) error {
 
@@ -4092,6 +4097,7 @@ func (ms *MutableStateImpl) prepareCloseTransaction(
 	}
 
 	if err := ms.closeTransactionHandleWorkflowReset(
+		ctx,
 		transactionPolicy,
 	); err != nil {
 		return err
@@ -4510,6 +4516,7 @@ func (ms *MutableStateImpl) closeTransactionHandleBufferedEventsLimit(
 }
 
 func (ms *MutableStateImpl) closeTransactionHandleWorkflowReset(
+	ctx context.Context,
 	transactionPolicy TransactionPolicy,
 ) error {
 
@@ -4526,7 +4533,7 @@ func (ms *MutableStateImpl) closeTransactionHandleWorkflowReset(
 		return nil
 	}
 
-	namespaceEntry, err := ms.shard.GetNamespaceRegistry().GetNamespaceByID(namespace.ID(ms.executionInfo.NamespaceId))
+	namespaceEntry, err := ms.shard.GetNamespaceRegistry().GetNamespaceByID(ctx, namespace.ID(ms.executionInfo.NamespaceId))
 	if err != nil {
 		return err
 	}

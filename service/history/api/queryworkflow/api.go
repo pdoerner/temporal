@@ -61,7 +61,7 @@ func Invoke(
 	if err != nil {
 		return nil, err
 	}
-	nsEntry, err := shard.GetNamespaceRegistry().GetNamespaceByID(namespaceID)
+	nsEntry, err := shard.GetNamespaceRegistry().GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, err
 	}

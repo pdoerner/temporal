@@ -201,10 +201,11 @@ func getTimerTaskEventIDAndRetryable(
 }
 
 func getNamespaceTagByID(
+	ctx context.Context,
 	registry namespace.Registry,
 	namespaceID string,
 ) metrics.Tag {
-	namespaceName, err := registry.GetNamespaceName(namespace.ID(namespaceID))
+	namespaceName, err := registry.GetNamespaceName(ctx, namespace.ID(namespaceID))
 	if err != nil {
 		return metrics.NamespaceUnknownTag()
 	}
@@ -213,10 +214,11 @@ func getNamespaceTagByID(
 }
 
 func getNamespaceTagAndReplicationStateByID(
+	ctx context.Context,
 	registry namespace.Registry,
 	namespaceID string,
 ) (metrics.Tag, enumspb.ReplicationState) {
-	namespace, err := registry.GetNamespaceByID(namespace.ID(namespaceID))
+	namespace, err := registry.GetNamespaceByID(ctx, namespace.ID(namespaceID))
 	if err != nil {
 		return metrics.NamespaceUnknownTag(), enumspb.REPLICATION_STATE_UNSPECIFIED
 	}

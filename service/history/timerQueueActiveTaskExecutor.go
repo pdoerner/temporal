@@ -93,6 +93,7 @@ func (t *timerQueueActiveTaskExecutor) Execute(
 	task := executable.GetTask()
 	taskType := queues.GetActiveTimerTaskTypeTagValue(task)
 	namespaceTag, replicationState := getNamespaceTagAndReplicationStateByID(
+		ctx,
 		t.shard.GetNamespaceRegistry(),
 		task.GetNamespaceID(),
 	)
@@ -267,6 +268,7 @@ Loop:
 		}
 
 		t.emitTimeoutMetricScopeWithNamespaceTag(
+			ctx,
 			namespace.ID(mutableState.GetExecutionInfo().NamespaceId),
 			metrics.TimerActiveTaskActivityTimeoutScope,
 			timerSequenceID.TimerType,
@@ -327,6 +329,7 @@ func (t *timerQueueActiveTaskExecutor) executeWorkflowTaskTimeoutTask(
 	switch task.TimeoutType {
 	case enumspb.TIMEOUT_TYPE_START_TO_CLOSE:
 		t.emitTimeoutMetricScopeWithNamespaceTag(
+			ctx,
 			namespace.ID(mutableState.GetExecutionInfo().NamespaceId),
 			metrics.TimerActiveTaskWorkflowTaskTimeoutScope,
 			enumspb.TIMEOUT_TYPE_START_TO_CLOSE,
@@ -345,6 +348,7 @@ func (t *timerQueueActiveTaskExecutor) executeWorkflowTaskTimeoutTask(
 		}
 
 		t.emitTimeoutMetricScopeWithNamespaceTag(
+			ctx,
 			namespace.ID(mutableState.GetExecutionInfo().NamespaceId),
 			metrics.TimerActiveTaskWorkflowTaskTimeoutScope,
 			enumspb.TIMEOUT_TYPE_SCHEDULE_TO_START,
@@ -618,11 +622,12 @@ func (t *timerQueueActiveTaskExecutor) updateWorkflowExecution(
 }
 
 func (t *timerQueueActiveTaskExecutor) emitTimeoutMetricScopeWithNamespaceTag(
+	ctx context.Context,
 	namespaceID namespace.ID,
 	operation string,
 	timerType enumspb.TimeoutType,
 ) {
-	namespaceEntry, err := t.registry.GetNamespaceByID(namespaceID)
+	namespaceEntry, err := t.registry.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return
 	}

@@ -157,8 +157,8 @@ func (s *timerQueueStandbyTaskExecutorSuite) SetupTest() {
 	s.mockClusterMetadata = s.mockShard.Resource.ClusterMetadata
 	s.mockAdminClient = s.mockShard.Resource.RemoteAdminClient
 	s.mockMatchingClient = s.mockShard.Resource.MatchingClient
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any()).Return(s.namespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceName(gomock.Any()).Return(s.namespaceEntry.Name(), nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), gomock.Any()).Return(s.namespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceName(gomock.Any(), gomock.Any()).Return(s.namespaceEntry.Name(), nil).AnyTimes()
 	s.mockClusterMetadata.EXPECT().GetClusterID().Return(tests.Version).AnyTimes()
 	s.mockClusterMetadata.EXPECT().IsVersionFromSameCluster(tests.Version, tests.Version).Return(true).AnyTimes()
 	s.mockClusterMetadata.EXPECT().GetCurrentClusterName().Return(cluster.TestCurrentClusterName).AnyTimes()

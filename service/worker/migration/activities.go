@@ -46,7 +46,7 @@ import (
 
 // GetMetadata returns history shard count and namespaceID for requested namespace.
 func (a *activities) GetMetadata(ctx context.Context, request metadataRequest) (*metadataResponse, error) {
-	nsEntry, err := a.namespaceRegistry.GetNamespace(namespace.Name(request.Namespace))
+	nsEntry, err := a.namespaceRegistry.GetNamespace(ctx, namespace.Name(request.Namespace))
 	if err != nil {
 		return nil, err
 	}

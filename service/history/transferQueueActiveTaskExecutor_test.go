@@ -189,16 +189,16 @@ func (s *transferQueueActiveTaskExecutorSuite) SetupTest() {
 	s.mockArchivalMetadata = s.mockShard.Resource.ArchivalMetadata
 	s.mockArchiverProvider = s.mockShard.Resource.ArchiverProvider
 	s.mockNamespaceCache = s.mockShard.Resource.NamespaceCache
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(tests.NamespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.Namespace).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceName(tests.NamespaceID).Return(tests.Namespace, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(tests.TargetNamespaceID).Return(tests.GlobalTargetNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.TargetNamespace).Return(tests.GlobalTargetNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(tests.ParentNamespaceID).Return(tests.GlobalParentNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.ParentNamespace).Return(tests.GlobalParentNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(tests.ChildNamespaceID).Return(tests.GlobalChildNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.ChildNamespace).Return(tests.GlobalChildNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(tests.MissedNamespaceID).Return(nil, serviceerror.NewNamespaceNotFound(tests.MissedNamespaceID.String())).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.NamespaceID).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.Namespace).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceName(gomock.Any(), tests.NamespaceID).Return(tests.Namespace, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.TargetNamespaceID).Return(tests.GlobalTargetNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.TargetNamespace).Return(tests.GlobalTargetNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.ParentNamespaceID).Return(tests.GlobalParentNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.ParentNamespace).Return(tests.GlobalParentNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.ChildNamespaceID).Return(tests.GlobalChildNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.ChildNamespace).Return(tests.GlobalChildNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.MissedNamespaceID).Return(nil, serviceerror.NewNamespaceNotFound(tests.MissedNamespaceID.String())).AnyTimes()
 	s.mockClusterMetadata.EXPECT().GetClusterID().Return(tests.Version).AnyTimes()
 	s.mockClusterMetadata.EXPECT().IsVersionFromSameCluster(tests.Version, tests.Version).Return(true).AnyTimes()
 	s.mockClusterMetadata.EXPECT().GetCurrentClusterName().Return(cluster.TestCurrentClusterName).AnyTimes()
@@ -871,9 +871,9 @@ func (s *transferQueueActiveTaskExecutorSuite) TestProcessCloseExecution_NoParen
 	workflowType := "some random workflow type"
 	taskQueueName := "some random task queue"
 
-	s.mockNamespaceCache.EXPECT().GetNamespace(namespace.Name("child namespace1")).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(namespace.Name("child namespace2")).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(namespace.Name("child namespace3")).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), namespace.Name("child namespace1")).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), namespace.Name("child namespace2")).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), namespace.Name("child namespace3")).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
 
 	mutableState := workflow.TestGlobalMutableState(s.mockShard, s.mockShard.GetEventsCache(), s.logger, s.version, execution.GetRunId())
 	_, err := mutableState.AddWorkflowExecutionStartedEvent(
@@ -1209,7 +1209,7 @@ func (s *transferQueueActiveTaskExecutorSuite) TestProcessCloseExecution_NoParen
 	workflowType := "some random workflow type"
 	taskQueueName := "some random task queue"
 
-	s.mockNamespaceCache.EXPECT().GetNamespace(namespace.Name("child namespace1")).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), namespace.Name("child namespace1")).Return(tests.GlobalNamespaceEntry, nil).AnyTimes()
 
 	mutableState := workflow.TestGlobalMutableState(s.mockShard, s.mockShard.GetEventsCache(), s.logger, s.version, execution.GetRunId())
 	_, err := mutableState.AddWorkflowExecutionStartedEvent(
@@ -2574,7 +2574,7 @@ func (s *transferQueueActiveTaskExecutorSuite) TestPendingCloseExecutionTasks() 
 			mockShard.EXPECT().GetClusterMetadata().Return(mockClusterMetadata).AnyTimes()
 			mockMutableState.EXPECT().GetLastWriteVersion().Return(tests.Version, nil).AnyTimes()
 			mockNamespaceRegistry := namespace.NewMockRegistry(ctrl)
-			mockNamespaceRegistry.EXPECT().GetNamespaceByID(gomock.Any()).Return(namespaceEntry, nil)
+			mockNamespaceRegistry.EXPECT().GetNamespaceByID(gomock.Any(), gomock.Any()).Return(namespaceEntry, nil)
 			mockShard.EXPECT().GetNamespaceRegistry().Return(mockNamespaceRegistry)
 			if c.MultiCursorQueue {
 				var highWatermarkTaskId int64

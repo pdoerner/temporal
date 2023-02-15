@@ -113,7 +113,7 @@ func GetOrPollMutableState(
 			return response, nil
 		}
 
-		namespaceRegistry, err := shard.GetNamespaceRegistry().GetNamespaceByID(namespaceID)
+		namespaceRegistry, err := shard.GetNamespaceRegistry().GetNamespaceByID(ctx, namespaceID)
 		if err != nil {
 			return nil, err
 		}

@@ -131,7 +131,7 @@ func (e *taskExecutorImpl) handleActivityTask(
 ) error {
 
 	attr := task.GetSyncActivityTaskAttributes()
-	doContinue, err := e.filterTask(namespace.ID(attr.GetNamespaceId()), forceApply)
+	doContinue, err := e.filterTask(ctx, namespace.ID(attr.GetNamespaceId()), forceApply)
 	if err != nil || !doContinue {
 		return err
 	}
@@ -221,7 +221,7 @@ func (e *taskExecutorImpl) handleHistoryReplicationTask(
 ) error {
 
 	attr := task.GetHistoryTaskAttributes()
-	doContinue, err := e.filterTask(namespace.ID(attr.GetNamespaceId()), forceApply)
+	doContinue, err := e.filterTask(ctx, namespace.ID(attr.GetNamespaceId()), forceApply)
 	if err != nil || !doContinue {
 		return err
 	}
@@ -310,7 +310,7 @@ func (e *taskExecutorImpl) handleSyncWorkflowStateTask(
 	executionInfo := attr.GetWorkflowState().GetExecutionInfo()
 	namespaceID := namespace.ID(executionInfo.GetNamespaceId())
 
-	doContinue, err := e.filterTask(namespaceID, forceApply)
+	doContinue, err := e.filterTask(ctx, namespaceID, forceApply)
 	if err != nil || !doContinue {
 		return err
 	}
@@ -329,6 +329,7 @@ func (e *taskExecutorImpl) handleSyncWorkflowStateTask(
 }
 
 func (e *taskExecutorImpl) filterTask(
+	ctx context.Context,
 	namespaceID namespace.ID,
 	forceApply bool,
 ) (bool, error) {
@@ -337,7 +338,7 @@ func (e *taskExecutorImpl) filterTask(
 		return true, nil
 	}
 
-	namespaceEntry, err := e.namespaceRegistry.GetNamespaceByID(namespaceID)
+	namespaceEntry, err := e.namespaceRegistry.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		if _, ok := err.(*serviceerror.NamespaceNotFound); ok {
 			// Drop the task
@@ -390,7 +391,7 @@ func (e *taskExecutorImpl) newTaskContext(
 ) (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithTimeout(parentCtx, replicationTimeout)
 
-	namespace, _ := e.namespaceRegistry.GetNamespaceName(namespace.ID(namespaceID))
+	namespace, _ := e.namespaceRegistry.GetNamespaceName(ctx, namespace.ID(namespaceID))
 	ctx = headers.SetCallerName(ctx, namespace.String())
 
 	return ctx, cancel

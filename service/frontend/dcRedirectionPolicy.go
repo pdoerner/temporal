@@ -146,7 +146,7 @@ func NewAllAPIsForwardingPolicy(currentClusterName string, config *Config, names
 
 // WithNamespaceIDRedirect redirect the API call based on namespace ID
 func (policy *SelectedAPIsForwardingRedirectionPolicy) WithNamespaceIDRedirect(ctx context.Context, namespaceID namespace.ID, apiName string, call func(string) error) error {
-	namespaceEntry, err := policy.namespaceRegistry.GetNamespaceByID(namespaceID)
+	namespaceEntry, err := policy.namespaceRegistry.GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func (policy *SelectedAPIsForwardingRedirectionPolicy) WithNamespaceIDRedirect(c
 
 // WithNamespaceRedirect redirect the API call based on namespace name
 func (policy *SelectedAPIsForwardingRedirectionPolicy) WithNamespaceRedirect(ctx context.Context, namespace namespace.Name, apiName string, call func(string) error) error {
-	namespaceEntry, err := policy.namespaceRegistry.GetNamespace(namespace)
+	namespaceEntry, err := policy.namespaceRegistry.GetNamespace(ctx, namespace)
 	if err != nil {
 		return err
 	}

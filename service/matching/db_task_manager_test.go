@@ -106,7 +106,7 @@ func (s *dbTaskManagerSuite) SetupTest() {
 	s.taskQueueKind = enumspb.TASK_QUEUE_KIND_STICKY
 	s.taskIDRangeSize = rand.Int63()
 
-	s.namespaceRegistry.EXPECT().GetNamespaceName(namespace.ID(s.namespaceID)).
+	s.namespaceRegistry.EXPECT().GetNamespaceName(gomock.Any(), namespace.ID(s.namespaceID)).
 		Return(namespace.Name("namespaceName"), nil).AnyTimes()
 
 	s.dbTaskManager = newDBTaskManager(

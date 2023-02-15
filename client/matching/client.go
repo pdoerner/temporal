@@ -78,6 +78,7 @@ func (c *clientImpl) AddActivityTask(
 	request *matchingservice.AddActivityTaskRequest,
 	opts ...grpc.CallOption) (*matchingservice.AddActivityTaskResponse, error) {
 	partition := c.loadBalancer.PickWritePartition(
+		ctx,
 		namespace.ID(request.GetNamespaceId()),
 		*request.GetTaskQueue(),
 		enumspb.TASK_QUEUE_TYPE_ACTIVITY,
@@ -102,6 +103,7 @@ func (c *clientImpl) AddWorkflowTask(
 	request *matchingservice.AddWorkflowTaskRequest,
 	opts ...grpc.CallOption) (*matchingservice.AddWorkflowTaskResponse, error) {
 	partition := c.loadBalancer.PickWritePartition(
+		ctx,
 		namespace.ID(request.GetNamespaceId()),
 		*request.GetTaskQueue(),
 		enumspb.TASK_QUEUE_TYPE_WORKFLOW,
@@ -126,6 +128,7 @@ func (c *clientImpl) PollActivityTaskQueue(
 	request *matchingservice.PollActivityTaskQueueRequest,
 	opts ...grpc.CallOption) (*matchingservice.PollActivityTaskQueueResponse, error) {
 	partition := c.loadBalancer.PickReadPartition(
+		ctx,
 		namespace.ID(request.GetNamespaceId()),
 		*request.PollRequest.GetTaskQueue(),
 		enumspb.TASK_QUEUE_TYPE_ACTIVITY,
@@ -150,6 +153,7 @@ func (c *clientImpl) PollWorkflowTaskQueue(
 	request *matchingservice.PollWorkflowTaskQueueRequest,
 	opts ...grpc.CallOption) (*matchingservice.PollWorkflowTaskQueueResponse, error) {
 	partition := c.loadBalancer.PickReadPartition(
+		ctx,
 		namespace.ID(request.GetNamespaceId()),
 		*request.PollRequest.GetTaskQueue(),
 		enumspb.TASK_QUEUE_TYPE_WORKFLOW,
@@ -171,6 +175,7 @@ func (c *clientImpl) PollWorkflowTaskQueue(
 
 func (c *clientImpl) QueryWorkflow(ctx context.Context, request *matchingservice.QueryWorkflowRequest, opts ...grpc.CallOption) (*matchingservice.QueryWorkflowResponse, error) {
 	partition := c.loadBalancer.PickReadPartition(
+		ctx,
 		namespace.ID(request.GetNamespaceId()),
 		*request.GetTaskQueue(),
 		enumspb.TASK_QUEUE_TYPE_WORKFLOW,

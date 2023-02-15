@@ -173,11 +173,11 @@ func (i *RedirectionInterceptor) Intercept(
 		return i.handleLocalAPIInvocation(ctx, req, handler, methodName)
 	}
 	if respAllocFn, ok := globalAPIResults[methodName]; ok {
-		namespaceName := interceptor.GetNamespace(i.namespaceCache, req)
+		namespaceName := interceptor.GetNamespace(ctx, i.namespaceCache, req)
 		return i.handleRedirectAPIInvocation(ctx, req, info, handler, methodName, respAllocFn, namespaceName)
 	}
 
-	// this should not happen for frontend APIs but ok for admin and other future handlers	
+	// this should not happen for frontend APIs but ok for admin and other future handlers
 	i.logger.Debug(fmt.Sprintf("RedirectionInterceptor encountered unknown API: %v", info.FullMethod))
 	return handler(ctx, req)
 }

@@ -187,6 +187,7 @@ func withIDBlockAllocator(ibl idBlockAllocator) taskQueueManagerOpt {
 }
 
 func newTaskQueueManager(
+	ctx context.Context,
 	e *matchingEngineImpl,
 	taskQueue *taskQueueID,
 	taskQueueKind enumspb.TaskQueueKind,
@@ -194,7 +195,7 @@ func newTaskQueueManager(
 	clusterMeta cluster.Metadata,
 	opts ...taskQueueManagerOpt,
 ) (taskQueueManager, error) {
-	namespaceEntry, err := e.namespaceRegistry.GetNamespaceByID(taskQueue.namespaceID)
+	namespaceEntry, err := e.namespaceRegistry.GetNamespaceByID(ctx, taskQueue.namespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -352,7 +353,7 @@ func (c *taskQueueManagerImpl) AddTask(
 
 	taskInfo := params.taskInfo
 
-	namespaceEntry, err := c.namespaceRegistry.GetNamespaceByID(namespace.ID(taskInfo.GetNamespaceId()))
+	namespaceEntry, err := c.namespaceRegistry.GetNamespaceByID(ctx, namespace.ID(taskInfo.GetNamespaceId()))
 	if err != nil {
 		return false, err
 	}
@@ -418,7 +419,7 @@ func (c *taskQueueManagerImpl) GetTask(
 		}()
 	}
 
-	namespaceEntry, err := c.namespaceRegistry.GetNamespaceByID(c.taskQueueID.namespaceID)
+	namespaceEntry, err := c.namespaceRegistry.GetNamespaceByID(ctx, c.taskQueueID.namespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -719,7 +720,7 @@ func (c *taskQueueManagerImpl) TaskQueueKind() enumspb.TaskQueueKind {
 func (c *taskQueueManagerImpl) newIOContext() (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithTimeout(context.Background(), ioTimeout)
 
-	namespace, _ := c.namespaceRegistry.GetNamespaceName(c.taskQueueID.namespaceID)
+	namespace, _ := c.namespaceRegistry.GetNamespaceName(ctx, c.taskQueueID.namespaceID)
 	ctx = headers.SetCallerInfo(ctx, headers.NewBackgroundCallerInfo(namespace.String()))
 
 	return ctx, cancel

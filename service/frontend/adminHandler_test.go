@@ -234,7 +234,7 @@ func (s *adminHandlerSuite) Test_GetWorkflowExecutionRawHistoryV2_FailedOnInvali
 
 func (s *adminHandlerSuite) Test_GetWorkflowExecutionRawHistoryV2_FailedOnNamespaceCache() {
 	ctx := context.Background()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.namespaceID).Return(nil, fmt.Errorf("test"))
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.namespaceID).Return(nil, fmt.Errorf("test"))
 	_, err := s.handler.GetWorkflowExecutionRawHistoryV2(ctx,
 		&adminservice.GetWorkflowExecutionRawHistoryV2Request{
 			NamespaceId: s.namespaceID.String(),
@@ -254,7 +254,7 @@ func (s *adminHandlerSuite) Test_GetWorkflowExecutionRawHistoryV2_FailedOnNamesp
 
 func (s *adminHandlerSuite) Test_GetWorkflowExecutionRawHistoryV2() {
 	ctx := context.Background()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.namespaceID).Return(s.namespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.namespaceID).Return(s.namespaceEntry, nil).AnyTimes()
 	branchToken := []byte{1}
 	versionHistory := versionhistory.NewVersionHistory(branchToken, []*historyspb.VersionHistoryItem{
 		versionhistory.NewVersionHistoryItem(int64(10), int64(100)),
@@ -291,7 +291,7 @@ func (s *adminHandlerSuite) Test_GetWorkflowExecutionRawHistoryV2() {
 
 func (s *adminHandlerSuite) Test_GetWorkflowExecutionRawHistoryV2_SameStartIDAndEndID() {
 	ctx := context.Background()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(s.namespaceID).Return(s.namespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), s.namespaceID).Return(s.namespaceEntry, nil).AnyTimes()
 	branchToken := []byte{1}
 	versionHistory := versionhistory.NewVersionHistory(branchToken, []*historyspb.VersionHistoryItem{
 		versionhistory.NewVersionHistoryItem(int64(10), int64(100)),
@@ -603,7 +603,7 @@ func (s *adminHandlerSuite) Test_GetSearchAttributes_EmptyIndexName() {
 
 	mockSdkClient := mocksdk.NewMockClient(s.controller)
 	s.mockResource.SDKClientFactory.EXPECT().GetSystemClient().Return(mockSdkClient).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(s.namespace).Return(s.namespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), s.namespace).Return(s.namespaceEntry, nil).AnyTimes()
 
 	// Elasticsearch is not configured
 	s.mockVisibilityMgr.EXPECT().GetName().Return(elasticsearch.PersistenceName).AnyTimes()
@@ -1256,7 +1256,7 @@ func (s *adminHandlerSuite) TestDeleteWorkflowExecution_DeleteCurrentExecution()
 		Execution: &execution,
 	}
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceID(s.namespace).Return(s.namespaceID, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceID(gomock.Any(), s.namespace).Return(s.namespaceID, nil).AnyTimes()
 	s.mockVisibilityMgr.EXPECT().GetName().Return("elasticsearch").AnyTimes()
 
 	s.mockExecutionMgr.EXPECT().GetCurrentExecution(gomock.Any(), gomock.Any()).Return(nil, errors.New("some random error"))
@@ -1331,7 +1331,7 @@ func (s *adminHandlerSuite) TestDeleteWorkflowExecution_LoadMutableStateFailed()
 		Execution: &execution,
 	}
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceID(s.namespace).Return(s.namespaceID, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceID(gomock.Any(), s.namespace).Return(s.namespaceID, nil).AnyTimes()
 	s.mockVisibilityMgr.EXPECT().GetName().Return("elasticsearch").AnyTimes()
 
 	s.mockExecutionMgr.EXPECT().GetWorkflowExecution(gomock.Any(), gomock.Any()).Return(nil, errors.New("some random error"))
@@ -1354,7 +1354,7 @@ func (s *adminHandlerSuite) TestDeleteWorkflowExecution_CassandraVisibilityBacke
 		Execution: &execution,
 	}
 
-	s.mockNamespaceCache.EXPECT().GetNamespaceID(s.namespace).Return(s.namespaceID, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceID(gomock.Any(), s.namespace).Return(s.namespaceID, nil).AnyTimes()
 	s.mockVisibilityMgr.EXPECT().GetName().Return("elasticsearch,cassandra").AnyTimes()
 
 	// test delete open records

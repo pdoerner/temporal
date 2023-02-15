@@ -78,7 +78,7 @@ func (ni *NamespaceRateLimitInterceptor) Intercept(
 		token = NamespaceRateLimitDefaultToken
 	}
 
-	namespace := GetNamespace(ni.namespaceRegistry, req)
+	namespace := GetNamespace(ctx, ni.namespaceRegistry, req)
 	if !ni.rateLimiter.Allow(time.Now().UTC(), quotas.NewRequest(
 		methodName,
 		token,

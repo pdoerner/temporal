@@ -90,6 +90,7 @@ func (t *visibilityQueueTaskExecutor) Execute(
 	task := executable.GetTask()
 	taskType := queues.GetVisibilityTaskTypeTagValue(task)
 	namespaceTag, replicationState := getNamespaceTagAndReplicationStateByID(
+		ctx,
 		t.shard.GetNamespaceRegistry(),
 		task.GetNamespaceID(),
 	)
@@ -263,7 +264,7 @@ func (t *visibilityQueueTaskExecutor) recordStartExecution(
 	visibilityMemo *commonpb.Memo,
 	searchAttributes *commonpb.SearchAttributes,
 ) error {
-	namespaceEntry, err := t.shard.GetNamespaceRegistry().GetNamespaceByID(namespaceID)
+	namespaceEntry, err := t.shard.GetNamespaceRegistry().GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return err
 	}
@@ -305,7 +306,7 @@ func (t *visibilityQueueTaskExecutor) upsertExecution(
 	visibilityMemo *commonpb.Memo,
 	searchAttributes *commonpb.SearchAttributes,
 ) error {
-	namespaceEntry, err := t.shard.GetNamespaceRegistry().GetNamespaceByID(namespaceID)
+	namespaceEntry, err := t.shard.GetNamespaceRegistry().GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return err
 	}
@@ -340,7 +341,7 @@ func (t *visibilityQueueTaskExecutor) processCloseExecution(
 	ctx, cancel := context.WithTimeout(parentCtx, taskTimeout)
 	defer cancel()
 
-	namespaceEntry, err := t.shard.GetNamespaceRegistry().GetNamespaceByID(namespace.ID(task.GetNamespaceID()))
+	namespaceEntry, err := t.shard.GetNamespaceRegistry().GetNamespaceByID(ctx, namespace.ID(task.GetNamespaceID()))
 	if err != nil {
 		return err
 	}

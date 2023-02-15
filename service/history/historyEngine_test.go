@@ -177,8 +177,8 @@ func (s *engineSuite) SetupTest() {
 	s.mockClusterMetadata.EXPECT().GetCurrentClusterName().Return(cluster.TestCurrentClusterName).AnyTimes()
 	s.mockClusterMetadata.EXPECT().GetAllClusterInfo().Return(cluster.TestSingleDCClusterInfo).AnyTimes()
 	s.mockClusterMetadata.EXPECT().ClusterNameForFailoverVersion(false, common.EmptyVersion).Return(cluster.TestCurrentClusterName).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(tests.NamespaceID).Return(tests.LocalNamespaceEntry, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(tests.Namespace).Return(tests.LocalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), tests.NamespaceID).Return(tests.LocalNamespaceEntry, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), tests.Namespace).Return(tests.LocalNamespaceEntry, nil).AnyTimes()
 
 	eventNotifier := events.NewNotifier(
 		clock.NewRealTimeSource(),
@@ -1553,8 +1553,8 @@ func (s *engineSuite) TestRespondWorkflowTaskCompletedBadBinary() {
 		namespace.WithID(uuid.New()),
 		namespace.WithBadBinary("test-bad-binary"),
 	)
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(ns.ID()).Return(ns, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespace(ns.ID()).Return(ns, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), ns.ID()).Return(ns, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), ns.ID()).Return(ns, nil).AnyTimes()
 	ms := workflow.TestLocalMutableState(s.mockHistoryEngine.shard, s.eventsCache,
 		ns, log.NewTestLogger(), we.GetRunId())
 	addWorkflowExecutionStartedEvent(ms, we, "wType", tl, payloads.EncodeString("input"), 100*time.Second, 50*time.Second, 200*time.Second, identity)
@@ -2406,7 +2406,7 @@ func (s *engineSuite) TestRespondWorkflowTaskCompletedSignalExternalWorkflowFail
 	gwmsResponse := &persistence.GetWorkflowExecutionResponse{State: wfMs}
 
 	s.mockExecutionMgr.EXPECT().GetWorkflowExecution(gomock.Any(), gomock.Any()).Return(gwmsResponse, nil)
-	s.mockNamespaceCache.EXPECT().GetNamespace(foreignNamespace).Return(
+	s.mockNamespaceCache.EXPECT().GetNamespace(gomock.Any(), foreignNamespace).Return(
 		nil, errors.New("get foreign namespace error"),
 	)
 
@@ -4720,7 +4720,7 @@ func (s *engineSuite) TestCancelTimer_RespondWorkflowTaskCompleted_TimerFired() 
 	wt2 := addWorkflowTaskScheduledEvent(ms)
 	addWorkflowTaskStartedEvent(ms, wt2.ScheduledEventID, tl, identity)
 	addTimerFiredEvent(ms, timerID)
-	_, _, err := ms.CloseTransactionAsMutation(time.Now().UTC(), workflow.TransactionPolicyActive)
+	_, _, err := ms.CloseTransactionAsMutation(context.Background(), time.Now().UTC(), workflow.TransactionPolicyActive)
 	s.Nil(err)
 
 	wfMs := workflow.TestCloneToProto(ms)

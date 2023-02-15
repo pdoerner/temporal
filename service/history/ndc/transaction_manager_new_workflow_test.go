@@ -129,7 +129,7 @@ func (s *transactionMgrForNewWorkflowSuite) TestDispatchForNewWorkflow_BrandNew_
 	mutableState.EXPECT().GetExecutionState().Return(&persistencespb.WorkflowExecutionState{
 		RunId: runID,
 	}).AnyTimes()
-	mutableState.EXPECT().CloseTransactionAsSnapshot(now, workflow.TransactionPolicyPassive).Return(
+	mutableState.EXPECT().CloseTransactionAsSnapshot(weContext, now, workflow.TransactionPolicyPassive).Return(
 		workflowSnapshot, workflowEventsSeq, nil,
 	)
 
@@ -184,7 +184,7 @@ func (s *transactionMgrForNewWorkflowSuite) TestDispatchForNewWorkflow_BrandNew_
 	mutableState.EXPECT().GetExecutionState().Return(&persistencespb.WorkflowExecutionState{
 		RunId: runID,
 	}).AnyTimes()
-	mutableState.EXPECT().CloseTransactionAsSnapshot(now, workflow.TransactionPolicyPassive).Return(
+	mutableState.EXPECT().CloseTransactionAsSnapshot(weContext, now, workflow.TransactionPolicyPassive).Return(
 		workflowSnapshot, workflowEventsSeq, nil,
 	)
 
@@ -248,7 +248,7 @@ func (s *transactionMgrForNewWorkflowSuite) TestDispatchForNewWorkflow_CreateAsC
 	targetMutableState.EXPECT().GetExecutionState().Return(&persistencespb.WorkflowExecutionState{
 		RunId: targetRunID,
 	}).AnyTimes()
-	targetMutableState.EXPECT().CloseTransactionAsSnapshot(now, workflow.TransactionPolicyPassive).Return(
+	targetMutableState.EXPECT().CloseTransactionAsSnapshot(targetContext, now, workflow.TransactionPolicyPassive).Return(
 		targetWorkflowSnapshot, targetWorkflowEventsSeq, nil,
 	)
 
@@ -323,7 +323,7 @@ func (s *transactionMgrForNewWorkflowSuite) TestDispatchForNewWorkflow_CreateAsC
 	targetMutableState.EXPECT().GetExecutionState().Return(&persistencespb.WorkflowExecutionState{
 		RunId: targetRunID,
 	}).AnyTimes()
-	targetMutableState.EXPECT().CloseTransactionAsSnapshot(now, workflow.TransactionPolicyPassive).Return(
+	targetMutableState.EXPECT().CloseTransactionAsSnapshot(targetContext, now, workflow.TransactionPolicyPassive).Return(
 		targetWorkflowSnapshot, targetWorkflowEventsSeq, nil,
 	)
 
@@ -400,7 +400,7 @@ func (s *transactionMgrForNewWorkflowSuite) TestDispatchForNewWorkflow_CreateAsZ
 	targetMutableState.EXPECT().GetExecutionState().Return(&persistencespb.WorkflowExecutionState{
 		RunId: targetRunID,
 	}).AnyTimes()
-	targetMutableState.EXPECT().CloseTransactionAsSnapshot(now, workflow.TransactionPolicyPassive).Return(
+	targetMutableState.EXPECT().CloseTransactionAsSnapshot(targetContext, now, workflow.TransactionPolicyPassive).Return(
 		targetWorkflowSnapshot, targetWorkflowEventsSeq, nil,
 	)
 
@@ -420,7 +420,7 @@ func (s *transactionMgrForNewWorkflowSuite) TestDispatchForNewWorkflow_CreateAsZ
 		targetWorkflowSnapshot,
 		targetWorkflowEventsSeq,
 	).Return(nil)
-	targetContext.EXPECT().ReapplyEvents(targetWorkflowEventsSeq).Return(nil)
+	targetContext.EXPECT().ReapplyEvents(ctx, targetWorkflowEventsSeq).Return(nil)
 
 	err := s.createMgr.dispatchForNewWorkflow(ctx, now, targetWorkflow)
 	s.NoError(err)
@@ -470,7 +470,7 @@ func (s *transactionMgrForNewWorkflowSuite) TestDispatchForNewWorkflow_CreateAsZ
 	targetMutableState.EXPECT().GetExecutionState().Return(&persistencespb.WorkflowExecutionState{
 		RunId: targetRunID,
 	}).AnyTimes()
-	targetMutableState.EXPECT().CloseTransactionAsSnapshot(now, workflow.TransactionPolicyPassive).Return(
+	targetMutableState.EXPECT().CloseTransactionAsSnapshot(targetContext, now, workflow.TransactionPolicyPassive).Return(
 		targetWorkflowSnapshot, targetWorkflowEventsSeq, nil,
 	)
 
@@ -490,7 +490,7 @@ func (s *transactionMgrForNewWorkflowSuite) TestDispatchForNewWorkflow_CreateAsZ
 		targetWorkflowSnapshot,
 		targetWorkflowEventsSeq,
 	).Return(nil)
-	targetContext.EXPECT().ReapplyEvents(targetWorkflowEventsSeq).Return(nil)
+	targetContext.EXPECT().ReapplyEvents(ctx, targetWorkflowEventsSeq).Return(nil)
 
 	err := s.createMgr.dispatchForNewWorkflow(ctx, now, targetWorkflow)
 	s.NoError(err)
@@ -540,7 +540,7 @@ func (s *transactionMgrForNewWorkflowSuite) TestDispatchForNewWorkflow_CreateAsZ
 	targetMutableState.EXPECT().GetExecutionState().Return(&persistencespb.WorkflowExecutionState{
 		RunId: targetRunID,
 	}).AnyTimes()
-	targetMutableState.EXPECT().CloseTransactionAsSnapshot(now, workflow.TransactionPolicyPassive).Return(
+	targetMutableState.EXPECT().CloseTransactionAsSnapshot(targetContext, now, workflow.TransactionPolicyPassive).Return(
 		targetWorkflowSnapshot, targetWorkflowEventsSeq, nil,
 	)
 
@@ -560,7 +560,7 @@ func (s *transactionMgrForNewWorkflowSuite) TestDispatchForNewWorkflow_CreateAsZ
 		targetWorkflowSnapshot,
 		targetWorkflowEventsSeq,
 	).Return(&persistence.WorkflowConditionFailedError{})
-	targetContext.EXPECT().ReapplyEvents(targetWorkflowEventsSeq).Return(nil)
+	targetContext.EXPECT().ReapplyEvents(ctx, targetWorkflowEventsSeq).Return(nil)
 
 	err := s.createMgr.dispatchForNewWorkflow(ctx, now, targetWorkflow)
 	s.NoError(err)
@@ -610,7 +610,7 @@ func (s *transactionMgrForNewWorkflowSuite) TestDispatchForNewWorkflow_CreateAsZ
 	targetMutableState.EXPECT().GetExecutionState().Return(&persistencespb.WorkflowExecutionState{
 		RunId: targetRunID,
 	}).AnyTimes()
-	targetMutableState.EXPECT().CloseTransactionAsSnapshot(now, workflow.TransactionPolicyPassive).Return(
+	targetMutableState.EXPECT().CloseTransactionAsSnapshot(targetContext, now, workflow.TransactionPolicyPassive).Return(
 		targetWorkflowSnapshot, targetWorkflowEventsSeq, nil,
 	)
 
@@ -630,7 +630,7 @@ func (s *transactionMgrForNewWorkflowSuite) TestDispatchForNewWorkflow_CreateAsZ
 		targetWorkflowSnapshot,
 		targetWorkflowEventsSeq,
 	).Return(&persistence.WorkflowConditionFailedError{})
-	targetContext.EXPECT().ReapplyEvents(targetWorkflowEventsSeq).Return(nil)
+	targetContext.EXPECT().ReapplyEvents(ctx, targetWorkflowEventsSeq).Return(nil)
 
 	err := s.createMgr.dispatchForNewWorkflow(ctx, now, targetWorkflow)
 	s.NoError(err)

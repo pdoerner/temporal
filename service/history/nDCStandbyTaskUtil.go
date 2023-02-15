@@ -250,11 +250,12 @@ func refreshTasks(
 }
 
 func getRemoteClusterName(
+	ctx context.Context,
 	currentCluster string,
 	registry namespace.Registry,
 	namespaceID string,
 ) (string, error) {
-	namespaceEntry, err := registry.GetNamespaceByID(namespace.ID(namespaceID))
+	namespaceEntry, err := registry.GetNamespaceByID(ctx, namespace.ID(namespaceID))
 	if err != nil {
 		return "", err
 	}

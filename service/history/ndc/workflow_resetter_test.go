@@ -199,6 +199,7 @@ func (s *workflowResetterSuite) TestPersistToDB_CurrentTerminated() {
 		}},
 	}}
 	resetMutableState.EXPECT().CloseTransactionAsSnapshot(
+		resetContext,
 		gomock.Any(),
 		workflow.TransactionPolicyActive,
 	).Return(resetSnapshot, resetEventsSeq, nil)
@@ -262,6 +263,7 @@ func (s *workflowResetterSuite) TestPersistToDB_CurrentNotTerminated() {
 		}},
 	}}
 	resetMutableState.EXPECT().CloseTransactionAsSnapshot(
+		resetContext,
 		gomock.Any(),
 		workflow.TransactionPolicyActive,
 	).Return(resetSnapshot, resetEventsSeq, nil)

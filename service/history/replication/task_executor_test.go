@@ -113,7 +113,7 @@ func (s *taskExecutorSuite) SetupTest() {
 	s.workflowCache = wcache.NewMockCache(s.controller)
 
 	s.clusterMetadata.EXPECT().GetCurrentClusterName().Return(cluster.TestCurrentClusterName).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceName(gomock.Any()).Return(tests.Namespace, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceName(gomock.Any(), gomock.Any()).Return(tests.Namespace, nil).AnyTimes()
 	s.mockShard.SetHistoryClientForTesting(s.historyClient)
 	s.replicationTaskExecutor = NewTaskExecutor(
 		s.remoteCluster,
@@ -132,7 +132,7 @@ func (s *taskExecutorSuite) TearDownTest() {
 func (s *taskExecutorSuite) TestFilterTask_Apply() {
 	namespaceID := namespace.ID(uuid.New())
 	s.mockNamespaceCache.EXPECT().
-		GetNamespaceByID(namespaceID).
+		GetNamespaceByID(gomock.Any(), namespaceID).
 		Return(namespace.NewGlobalNamespaceForTest(
 			nil,
 			nil,
@@ -142,7 +142,7 @@ func (s *taskExecutorSuite) TestFilterTask_Apply() {
 			}},
 			0,
 		), nil)
-	ok, err := s.replicationTaskExecutor.filterTask(namespaceID, false)
+	ok, err := s.replicationTaskExecutor.filterTask(context.Background(), namespaceID, false)
 	s.NoError(err)
 	s.True(ok)
 }
@@ -150,14 +150,14 @@ func (s *taskExecutorSuite) TestFilterTask_Apply() {
 func (s *taskExecutorSuite) TestFilterTask_NotApply() {
 	namespaceID := namespace.ID(uuid.New())
 	s.mockNamespaceCache.EXPECT().
-		GetNamespaceByID(namespaceID).
+		GetNamespaceByID(gomock.Any(), namespaceID).
 		Return(namespace.NewGlobalNamespaceForTest(
 			nil,
 			nil,
 			&persistencespb.NamespaceReplicationConfig{Clusters: []string{cluster.TestAlternativeClusterName}},
 			0,
 		), nil)
-	ok, err := s.replicationTaskExecutor.filterTask(namespaceID, false)
+	ok, err := s.replicationTaskExecutor.filterTask(context.Background(), namespaceID, false)
 	s.NoError(err)
 	s.False(ok)
 }
@@ -165,16 +165,16 @@ func (s *taskExecutorSuite) TestFilterTask_NotApply() {
 func (s *taskExecutorSuite) TestFilterTask_Error() {
 	namespaceID := namespace.ID(uuid.New())
 	s.mockNamespaceCache.EXPECT().
-		GetNamespaceByID(namespaceID).
+		GetNamespaceByID(gomock.Any(), namespaceID).
 		Return(nil, fmt.Errorf("random error"))
-	ok, err := s.replicationTaskExecutor.filterTask(namespaceID, false)
+	ok, err := s.replicationTaskExecutor.filterTask(context.Background(), namespaceID, false)
 	s.Error(err)
 	s.False(ok)
 }
 
 func (s *taskExecutorSuite) TestFilterTask_EnforceApply() {
 	namespaceID := namespace.ID(uuid.New())
-	ok, err := s.replicationTaskExecutor.filterTask(namespaceID, true)
+	ok, err := s.replicationTaskExecutor.filterTask(context.Background(), namespaceID, true)
 	s.NoError(err)
 	s.True(ok)
 }
@@ -182,9 +182,9 @@ func (s *taskExecutorSuite) TestFilterTask_EnforceApply() {
 func (s *taskExecutorSuite) TestFilterTask_NamespaceNotFound() {
 	namespaceID := namespace.ID(uuid.New())
 	s.mockNamespaceCache.EXPECT().
-		GetNamespaceByID(namespaceID).
+		GetNamespaceByID(gomock.Any(), namespaceID).
 		Return(nil, &serviceerror.NamespaceNotFound{})
-	ok, err := s.replicationTaskExecutor.filterTask(namespaceID, false)
+	ok, err := s.replicationTaskExecutor.filterTask(context.Background(), namespaceID, false)
 	s.NoError(err)
 	s.False(ok)
 }

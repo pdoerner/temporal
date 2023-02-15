@@ -289,7 +289,7 @@ func (p *ackMgrImpl) getTasks(
 		//  - skippedTaskCount needs to be incremented to prevent timeout on caller side (too many tasks are skipped).
 		// If error has occurred though, lastTaskID shouldn't be updated, and next time task needs to be read again.
 
-		ns, err := p.namespaceRegistry.GetNamespaceByID(namespace.ID(task.GetNamespaceID()))
+		ns, err := p.namespaceRegistry.GetNamespaceByID(ctx, namespace.ID(task.GetNamespaceID()))
 		if err != nil {
 			if _, isNotFound := err.(*serviceerror.NamespaceNotFound); !isNotFound {
 				return p.swallowPartialResultsError(replicationTasks, lastTaskID, err)

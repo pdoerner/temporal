@@ -115,8 +115,8 @@ func (s *matchingEngineSuite) SetupTest() {
 	s.taskManager = newTestTaskManager(s.logger)
 	s.mockNamespaceCache = namespace.NewMockRegistry(s.controller)
 	ns := namespace.NewLocalNamespaceForTest(&persistencespb.NamespaceInfo{Name: matchingTestNamespace}, nil, "")
-	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any()).Return(ns, nil).AnyTimes()
-	s.mockNamespaceCache.EXPECT().GetNamespaceName(gomock.Any()).Return(ns.Name(), nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), gomock.Any()).Return(ns, nil).AnyTimes()
+	s.mockNamespaceCache.EXPECT().GetNamespaceName(gomock.Any(), gomock.Any()).Return(ns.Name(), nil).AnyTimes()
 	s.handlerContext = newHandlerContext(
 		context.Background(),
 		matchingTestNamespace,
@@ -286,6 +286,7 @@ func (s *matchingEngineSuite) TestOnlyUnloadMatchingInstance() {
 	s.Require().NoError(err)
 
 	tqm2, err := newTaskQueueManager(
+		context.Background(),
 		s.matchingEngine,
 		queueID, // same queueID as above
 		enumspb.TASK_QUEUE_KIND_NORMAL,
@@ -798,7 +799,7 @@ func (s *matchingEngineSuite) TestSyncMatchActivities() {
 
 	var err error
 	s.taskManager.getTaskQueueManager(tlID).rangeID = initialRangeID
-	mgr, err := newTaskQueueManager(s.matchingEngine, tlID, tlKind, s.matchingEngine.config, s.matchingEngine.clusterMeta)
+	mgr, err := newTaskQueueManager(context.Background(), s.matchingEngine, tlID, tlKind, s.matchingEngine.config, s.matchingEngine.clusterMeta)
 	s.NoError(err)
 
 	mgrImpl, ok := mgr.(*taskQueueManagerImpl)
@@ -1017,7 +1018,7 @@ func (s *matchingEngineSuite) concurrentPublishConsumeActivities(
 
 	s.taskManager.getTaskQueueManager(tlID).rangeID = initialRangeID
 	var err error
-	mgr, err := newTaskQueueManager(s.matchingEngine, tlID, tlKind, s.matchingEngine.config, s.matchingEngine.clusterMeta)
+	mgr, err := newTaskQueueManager(context.Background(), s.matchingEngine, tlID, tlKind, s.matchingEngine.config, s.matchingEngine.clusterMeta)
 	s.NoError(err)
 
 	mgrImpl := mgr.(*taskQueueManagerImpl)
@@ -1766,7 +1767,7 @@ func (s *matchingEngineSuite) TestTaskQueueManagerGetTaskBatch_ReadBatchDone() {
 	const maxReadLevel = int64(120)
 	config := defaultTestConfig()
 	config.RangeSize = rangeSize
-	tlMgr0, err := newTaskQueueManager(s.matchingEngine, tlID, tlNormal, config, s.matchingEngine.clusterMeta)
+	tlMgr0, err := newTaskQueueManager(context.Background(), s.matchingEngine, tlID, tlNormal, config, s.matchingEngine.clusterMeta)
 	s.NoError(err)
 
 	tlMgr, ok := tlMgr0.(*taskQueueManagerImpl)
@@ -1804,7 +1805,7 @@ func (s *matchingEngineSuite) TestTaskQueueManager_CyclingBehavior() {
 	for i := 0; i < 4; i++ {
 		prevGetTasksCount := s.taskManager.getGetTasksCount(tlID)
 
-		tlMgr, err := newTaskQueueManager(s.matchingEngine, tlID, tlNormal, config, s.matchingEngine.clusterMeta)
+		tlMgr, err := newTaskQueueManager(context.Background(), s.matchingEngine, tlID, tlNormal, config, s.matchingEngine.clusterMeta)
 		s.NoError(err)
 
 		tlMgr.Start()

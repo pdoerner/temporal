@@ -338,12 +338,12 @@ func createTestTaskQueueManagerWithConfig(
 	logger := log.NewTestLogger()
 	tm := newTestTaskManager(logger)
 	mockNamespaceCache := namespace.NewMockRegistry(controller)
-	mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any()).Return(&namespace.Namespace{}, nil).AnyTimes()
-	mockNamespaceCache.EXPECT().GetNamespaceName(gomock.Any()).Return(namespace.Name("ns-name"), nil).AnyTimes()
+	mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), gomock.Any()).Return(&namespace.Namespace{}, nil).AnyTimes()
+	mockNamespaceCache.EXPECT().GetNamespaceName(gomock.Any(), gomock.Any()).Return(namespace.Name("ns-name"), nil).AnyTimes()
 	cmeta := cluster.NewMetadataForTest(cluster.NewTestClusterMetadataConfig(false, true))
 	me := newMatchingEngine(testOpts.config, tm, nil, logger, mockNamespaceCache, testOpts.matchingClientMock)
 	tlKind := enumspb.TASK_QUEUE_KIND_NORMAL
-	tlMgr, err := newTaskQueueManager(me, testOpts.tqId, tlKind, testOpts.config, cmeta, opts...)
+	tlMgr, err := newTaskQueueManager(context.Background(), me, testOpts.tqId, tlKind, testOpts.config, cmeta, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -475,8 +475,8 @@ func TestAddTaskStandby(t *testing.T) {
 
 			// we need to override the mockNamespaceCache to return a passive namespace
 			mockNamespaceCache := namespace.NewMockRegistry(controller)
-			mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any()).Return(ns, nil).AnyTimes()
-			mockNamespaceCache.EXPECT().GetNamespaceName(gomock.Any()).Return(ns.Name(), nil).AnyTimes()
+			mockNamespaceCache.EXPECT().GetNamespaceByID(gomock.Any(), gomock.Any()).Return(ns, nil).AnyTimes()
+			mockNamespaceCache.EXPECT().GetNamespaceName(gomock.Any(), gomock.Any()).Return(ns.Name(), nil).AnyTimes()
 			tqm.namespaceRegistry = mockNamespaceCache
 		},
 	)

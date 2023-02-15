@@ -241,7 +241,7 @@ func (s *redirectionInterceptorSuite) TestHandleGlobalAPIInvocation_Local() {
 		},
 		1,
 	)
-	s.namespaceCache.EXPECT().GetNamespace(namespaceName).Return(namespaceEntry, nil).AnyTimes()
+	s.namespaceCache.EXPECT().GetNamespace(ctx, namespaceName).Return(namespaceEntry, nil).AnyTimes()
 	methodName := "SignalWithStartWorkflowExecution"
 
 	resp, err := s.redirector.handleRedirectAPIInvocation(
@@ -277,7 +277,7 @@ func (s *redirectionInterceptorSuite) TestHandleLocalAPIInvocation_Redirect() {
 		},
 		1,
 	)
-	s.namespaceCache.EXPECT().GetNamespace(namespaceName).Return(namespaceEntry, nil).AnyTimes()
+	s.namespaceCache.EXPECT().GetNamespace(ctx, namespaceName).Return(namespaceEntry, nil).AnyTimes()
 	methodName := "SignalWithStartWorkflowExecution"
 
 	grpcConn := &mockClientConnInterface{

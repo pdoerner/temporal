@@ -378,6 +378,7 @@ func createWorkflowExecution(
 	}
 
 	if namespaceEntry, err := shard.GetNamespaceRegistry().GetNamespaceByID(
+		ctx,
 		namespace.ID(request.NewWorkflowSnapshot.ExecutionInfo.NamespaceId),
 	); err == nil {
 		emitMutationMetrics(
@@ -420,6 +421,7 @@ func conflictResolveWorkflowExecution(
 	}
 
 	if namespaceEntry, err := shard.GetNamespaceRegistry().GetNamespaceByID(
+		ctx,
 		namespace.ID(request.ResetWorkflowSnapshot.ExecutionInfo.NamespaceId),
 	); err == nil {
 		emitMutationMetrics(
@@ -475,6 +477,7 @@ func getWorkflowExecution(
 	}
 
 	if namespaceEntry, err := shard.GetNamespaceRegistry().GetNamespaceByID(
+		ctx,
 		namespace.ID(resp.State.ExecutionInfo.NamespaceId),
 	); err == nil {
 		emitGetMetrics(
@@ -508,6 +511,7 @@ func updateWorkflowExecution(
 	}
 
 	if namespaceEntry, err := shard.GetNamespaceRegistry().GetNamespaceByID(
+		ctx,
 		namespace.ID(request.UpdateWorkflowMutation.ExecutionInfo.NamespaceId),
 	); err == nil {
 		emitMutationMetrics(

@@ -97,7 +97,7 @@ func (t *transferQueueStandbyTaskExecutor) Execute(
 	task := executable.GetTask()
 	taskType := queues.GetStandbyTransferTaskTypeTagValue(task)
 	metricsTags := []metrics.Tag{
-		getNamespaceTagByID(t.shard.GetNamespaceRegistry(), task.GetNamespaceID()),
+		getNamespaceTagByID(ctx, t.shard.GetNamespaceRegistry(), task.GetNamespaceID()),
 		metrics.TaskTypeTag(taskType),
 		metrics.OperationTag(taskType), // for backward compatibility
 	}
@@ -615,6 +615,7 @@ func (t *transferQueueStandbyTaskExecutor) fetchHistoryFromRemote(
 	}
 
 	remoteClusterName, err := getRemoteClusterName(
+		ctx,
 		t.currentClusterName,
 		t.registry,
 		taskInfo.GetNamespaceID(),

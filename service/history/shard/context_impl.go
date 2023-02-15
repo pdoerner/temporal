@@ -579,7 +579,7 @@ func (s *ContextImpl) AddTasks(
 
 	// do not try to get namespace cache within shard lock
 	namespaceID := namespace.ID(request.NamespaceID)
-	namespaceEntry, err := s.GetNamespaceRegistry().GetNamespaceByID(namespaceID)
+	namespaceEntry, err := s.GetNamespaceRegistry().GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return err
 	}
@@ -621,7 +621,7 @@ func (s *ContextImpl) CreateWorkflowExecution(
 	// do not try to get namespace cache within shard lock
 	namespaceID := namespace.ID(request.NewWorkflowSnapshot.ExecutionInfo.NamespaceId)
 	workflowID := request.NewWorkflowSnapshot.ExecutionInfo.WorkflowId
-	namespaceEntry, err := s.GetNamespaceRegistry().GetNamespaceByID(namespaceID)
+	namespaceEntry, err := s.GetNamespaceRegistry().GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -670,7 +670,7 @@ func (s *ContextImpl) UpdateWorkflowExecution(
 	// do not try to get namespace cache within shard lock
 	namespaceID := namespace.ID(request.UpdateWorkflowMutation.ExecutionInfo.NamespaceId)
 	workflowID := request.UpdateWorkflowMutation.ExecutionInfo.WorkflowId
-	namespaceEntry, err := s.GetNamespaceRegistry().GetNamespaceByID(namespaceID)
+	namespaceEntry, err := s.GetNamespaceRegistry().GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -745,7 +745,7 @@ func (s *ContextImpl) ConflictResolveWorkflowExecution(
 	// do not try to get namespace cache within shard lock
 	namespaceID := namespace.ID(request.ResetWorkflowSnapshot.ExecutionInfo.NamespaceId)
 	workflowID := request.ResetWorkflowSnapshot.ExecutionInfo.WorkflowId
-	namespaceEntry, err := s.GetNamespaceRegistry().GetNamespaceByID(namespaceID)
+	namespaceEntry, err := s.GetNamespaceRegistry().GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -813,7 +813,7 @@ func (s *ContextImpl) SetWorkflowExecution(
 	// do not try to get namespace cache within shard lock
 	namespaceID := namespace.ID(request.SetWorkflowSnapshot.ExecutionInfo.NamespaceId)
 	workflowID := request.SetWorkflowSnapshot.ExecutionInfo.WorkflowId
-	namespaceEntry, err := s.GetNamespaceRegistry().GetNamespaceByID(namespaceID)
+	namespaceEntry, err := s.GetNamespaceRegistry().GetNamespaceByID(ctx, namespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -916,7 +916,7 @@ func (s *ContextImpl) AppendHistoryEvents(
 		// namespaces along with the individual namespaces stats
 		handler := s.GetMetricsHandler().WithTags(metrics.OperationTag(metrics.SessionStatsScope))
 		handler.Histogram(metrics.HistorySize.GetMetricName(), metrics.HistorySize.GetMetricUnit()).Record(int64(size))
-		if entry, err := s.GetNamespaceRegistry().GetNamespaceByID(namespaceID); err == nil && entry != nil {
+		if entry, err := s.GetNamespaceRegistry().GetNamespaceByID(ctx, namespaceID); err == nil && entry != nil {
 			handler.Histogram(metrics.HistorySize.GetMetricName(), metrics.HistorySize.GetMetricUnit()).
 				Record(int64(size), metrics.NamespaceTag(entry.Name().String()))
 		}
@@ -971,7 +971,7 @@ func (s *ContextImpl) DeleteWorkflowExecution(
 	}
 
 	// Do not get namespace cache within shard lock.
-	namespaceEntry, err := s.GetNamespaceRegistry().GetNamespaceByID(namespace.ID(key.NamespaceID))
+	namespaceEntry, err := s.GetNamespaceRegistry().GetNamespaceByID(ctx, namespace.ID(key.NamespaceID))
 	deleteVisibilityRecord := true
 	if err != nil {
 		if _, isNotFound := err.(*serviceerror.NamespaceNotFound); isNotFound {

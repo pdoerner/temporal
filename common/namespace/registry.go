@@ -28,17 +28,17 @@ package namespace
 
 import (
 	"context"
-	"github.com/dgryski/go-farm"
-	"go.temporal.io/server/common/collection"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"go.temporal.io/api/serviceerror"
+	"github.com/dgryski/go-farm"
 
+	"go.temporal.io/api/serviceerror"
 	"go.temporal.io/server/common"
 	"go.temporal.io/server/common/cache"
 	"go.temporal.io/server/common/clock"
+	"go.temporal.io/server/common/collection"
 	"go.temporal.io/server/common/dynamicconfig"
 	"go.temporal.io/server/common/headers"
 	"go.temporal.io/server/common/log"
@@ -603,6 +603,7 @@ func (r *registry) cleanupRequestLock(lock *sync.Mutex, handle string) {
 	if lock.TryLock() {
 		// if there are no other waiters for this namespace lock, remove from map to prevent memory leak
 		r.readthroughRequestLocks.Remove(handle)
+		lock.Unlock()
 	}
 }
 

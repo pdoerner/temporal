@@ -27,6 +27,7 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"math"
 	"sync/atomic"
 	"time"
@@ -150,11 +151,13 @@ func (rl *HealthRequestRateLimiterImpl) refreshRate() {
 	if rl.latencyThresholdExceeded() || rl.errorThresholdExceeded() {
 		// limit exceeded, do backoff
 		rl.curRateMultiplier = math.Max(rl.minRateMultiplier, rl.curRateMultiplier-rl.curOptions.RateBackoffStepSize)
+		rl.logger.Error(fmt.Sprintf("<REDUCING RATE>: MULT:%f", rl.curRateMultiplier))
 		rl.rateLimiter.SetRate(rl.curRateMultiplier * rl.rateFn())
 		rl.rateLimiter.SetBurst(int(rl.rateToBurstRatio * rl.rateFn()))
 	} else if rl.curRateMultiplier < rl.maxRateMultiplier {
 		// already doing backoff and under thresholds, increase limit
 		rl.curRateMultiplier = math.Min(rl.maxRateMultiplier, rl.curRateMultiplier+rl.curOptions.RateIncreaseStepSize)
+		rl.logger.Error(fmt.Sprintf("<INCREASING RATE>: MULT:%f", rl.curRateMultiplier))
 		rl.rateLimiter.SetRate(rl.curRateMultiplier * rl.rateFn())
 		rl.rateLimiter.SetBurst(int(rl.rateToBurstRatio * rl.rateFn()))
 	}
@@ -191,9 +194,11 @@ func (rl *HealthRequestRateLimiterImpl) updateRefreshTimer() {
 }
 
 func (rl *HealthRequestRateLimiterImpl) latencyThresholdExceeded() bool {
+	rl.logger.Error("<|LATENCY THRESHOLD EXCEEDED|>")
 	return rl.curOptions.LatencyThreshold > 0 && rl.healthSignals.AverageLatency() > rl.curOptions.LatencyThreshold
 }
 
 func (rl *HealthRequestRateLimiterImpl) errorThresholdExceeded() bool {
+	rl.logger.Error("<|ERROR THRESHOLD EXCEEDED|>")
 	return rl.curOptions.ErrorThreshold > 0 && rl.healthSignals.ErrorRatio() > rl.curOptions.ErrorThreshold
 }

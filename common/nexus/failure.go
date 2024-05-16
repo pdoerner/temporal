@@ -197,36 +197,38 @@ func AdaptAuthorizeError(err error) error {
 func HandlerErrorFromClientError(err error) error {
 	var unexpectedRespErr *nexus.UnexpectedResponseError
 	if errors.As(err, &unexpectedRespErr) {
-		handlerErr := &nexus.HandlerError{
+		return &nexus.HandlerError{
+			Type:    HandlerErrorTypeFromHTTPStatus(unexpectedRespErr.Response.StatusCode),
 			Failure: unexpectedRespErr.Failure,
 		}
-
-		switch unexpectedRespErr.Response.StatusCode {
-		case http.StatusBadRequest:
-			handlerErr.Type = nexus.HandlerErrorTypeBadRequest
-		case http.StatusUnauthorized:
-			handlerErr.Type = nexus.HandlerErrorTypeUnauthenticated
-		case http.StatusForbidden:
-			handlerErr.Type = nexus.HandlerErrorTypeUnauthorized
-		case http.StatusNotFound:
-			handlerErr.Type = nexus.HandlerErrorTypeNotFound
-		case http.StatusTooManyRequests:
-			handlerErr.Type = nexus.HandlerErrorTypeResourceExhausted
-		case http.StatusInternalServerError:
-			handlerErr.Type = nexus.HandlerErrorTypeInternal
-		case http.StatusNotImplemented:
-			handlerErr.Type = nexus.HandlerErrorTypeNotImplemented
-		case http.StatusServiceUnavailable:
-			handlerErr.Type = nexus.HandlerErrorTypeUnavailable
-		case nexus.StatusDownstreamError:
-			handlerErr.Type = nexus.HandlerErrorTypeDownstreamError
-		case nexus.StatusDownstreamTimeout:
-			handlerErr.Type = nexus.HandlerErrorTypeDownstreamTimeout
-		}
-
-		return handlerErr
 	}
-
 	// Let the nexus SDK handle this for us (log and convert to an internal error).
 	return err
+}
+
+func HandlerErrorTypeFromHTTPStatus(statusCode int) nexus.HandlerErrorType {
+	switch statusCode {
+	case http.StatusBadRequest:
+		return nexus.HandlerErrorTypeBadRequest
+	case http.StatusUnauthorized:
+		return nexus.HandlerErrorTypeUnauthenticated
+	case http.StatusForbidden:
+		return nexus.HandlerErrorTypeUnauthorized
+	case http.StatusNotFound:
+		return nexus.HandlerErrorTypeNotFound
+	case http.StatusTooManyRequests:
+		return nexus.HandlerErrorTypeResourceExhausted
+	case http.StatusInternalServerError:
+		return nexus.HandlerErrorTypeInternal
+	case http.StatusNotImplemented:
+		return nexus.HandlerErrorTypeNotImplemented
+	case http.StatusServiceUnavailable:
+		return nexus.HandlerErrorTypeUnavailable
+	case nexus.StatusDownstreamError:
+		return nexus.HandlerErrorTypeDownstreamError
+	case nexus.StatusDownstreamTimeout:
+		return nexus.HandlerErrorTypeDownstreamTimeout
+	default:
+		return nexus.HandlerErrorTypeInternal
+	}
 }

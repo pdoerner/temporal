@@ -136,9 +136,9 @@ func (c *operationContext) interceptRequest(ctx context.Context, request *matchi
 			// Handler methods should have special logic to forward requests if this method returns a serviceerror.NamespaceNotActive error.
 			c.metricsHandler = c.metricsHandler.WithTags(metrics.NexusOutcomeTag("request_forwarded"))
 			var forwardStartTime time.Time
-			c.metricsHandlerForInterceptors, forwardStartTime = c.redirectionInterceptor.beforeCall(c.apiName)
+			c.metricsHandlerForInterceptors, forwardStartTime = c.redirectionInterceptor.BeforeCall(c.apiName)
 			c.cleanupFunctions = append(c.cleanupFunctions, func(retErr error) {
-				c.redirectionInterceptor.afterCall(c.metricsHandlerForInterceptors, forwardStartTime, c.namespace.ActiveClusterName(), retErr)
+				c.redirectionInterceptor.AfterCall(c.metricsHandlerForInterceptors, forwardStartTime, c.namespace.ActiveClusterName(), retErr)
 			})
 			return notActiveErr
 		}
@@ -167,18 +167,18 @@ func (c *operationContext) interceptRequest(ctx context.Context, request *matchi
 	return nil
 }
 
-// Combines logic from RedirectionInterceptor.redirectionAllowed and some from
+// Combines logic from RedirectionInterceptor.RedirectionAllowed and some from
 // SelectedAPIsForwardingRedirectionPolicy.getTargetClusterAndIsNamespaceNotActiveAutoForwarding so all
 // redirection conditions can be checked at once. If either of those methods are updated, this should
 // be kept in sync.
 func (c *operationContext) shouldForwardRequest(ctx context.Context, header nexus.Header) bool {
-	redirectHeader := header.Get(dcRedirectionContextHeaderName)
+	redirectHeader := header.Get(DCRedirectionContextHeaderName)
 	redirectAllowed, err := strconv.ParseBool(redirectHeader)
 	if err != nil {
 		redirectAllowed = true
 	}
 	return redirectAllowed &&
-		c.redirectionInterceptor.redirectionAllowed(ctx) &&
+		c.redirectionInterceptor.RedirectionAllowed(ctx) &&
 		c.namespace.IsGlobalNamespace() &&
 		len(c.namespace.ClusterNames()) > 1 &&
 		c.forwardingEnabledForNamespace(c.namespaceName)
@@ -337,7 +337,7 @@ func (h *nexusHandler) forwardStartOperation(
 	options nexus.StartOperationOptions,
 	oc *operationContext,
 ) (nexus.HandlerStartOperationResult[any], error) {
-	options.Header[dcRedirectionApiHeaderName] = "true"
+	options.Header[DCRedirectionApiHeaderName] = "true"
 
 	client, err := h.nexusClientForActiveCluster(oc, service)
 	if err != nil {
@@ -418,7 +418,7 @@ func (h *nexusHandler) forwardCancelOperation(
 	options nexus.CancelOperationOptions,
 	oc *operationContext,
 ) error {
-	options.Header[dcRedirectionApiHeaderName] = "true"
+	options.Header[DCRedirectionApiHeaderName] = "true"
 
 	client, err := h.nexusClientForActiveCluster(oc, service)
 	if err != nil {

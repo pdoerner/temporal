@@ -77,7 +77,7 @@ type operationContext struct {
 	metricsHandler                metrics.Handler
 	logger                        log.Logger
 	auth                          *authorization.Interceptor
-	redirectionInterceptor        *RedirectionInterceptor
+	redirectionInterceptor        *interceptor.Redirection
 	forwardingEnabledForNamespace dynamicconfig.BoolPropertyFnWithNamespaceFilter
 	cleanupFunctions              []func(error)
 }
@@ -172,7 +172,7 @@ func (c *operationContext) interceptRequest(ctx context.Context, request *matchi
 // redirection conditions can be checked at once. If either of those methods are updated, this should
 // be kept in sync.
 func (c *operationContext) shouldForwardRequest(ctx context.Context, header nexus.Header) bool {
-	redirectHeader := header.Get(DCRedirectionContextHeaderName)
+	redirectHeader := header.Get(interceptor.DCRedirectionContextHeaderName)
 	redirectAllowed, err := strconv.ParseBool(redirectHeader)
 	if err != nil {
 		redirectAllowed = true
@@ -197,7 +197,7 @@ type nexusHandler struct {
 	namespaceRegistry             namespace.Registry
 	matchingClient                matchingservice.MatchingServiceClient
 	auth                          *authorization.Interceptor
-	redirectionInterceptor        *RedirectionInterceptor
+	redirectionInterceptor        *interceptor.Redirection
 	forwardingEnabledForNamespace dynamicconfig.BoolPropertyFnWithNamespaceFilter
 	forwardingClients             *cluster.FrontendHTTPClientCache
 }
@@ -337,7 +337,7 @@ func (h *nexusHandler) forwardStartOperation(
 	options nexus.StartOperationOptions,
 	oc *operationContext,
 ) (nexus.HandlerStartOperationResult[any], error) {
-	options.Header[DCRedirectionApiHeaderName] = "true"
+	options.Header[interceptor.DCRedirectionApiHeaderName] = "true"
 
 	client, err := h.nexusClientForActiveCluster(oc, service)
 	if err != nil {
@@ -418,7 +418,7 @@ func (h *nexusHandler) forwardCancelOperation(
 	options nexus.CancelOperationOptions,
 	oc *operationContext,
 ) error {
-	options.Header[DCRedirectionApiHeaderName] = "true"
+	options.Header[interceptor.DCRedirectionApiHeaderName] = "true"
 
 	client, err := h.nexusClientForActiveCluster(oc, service)
 	if err != nil {

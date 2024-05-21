@@ -57,7 +57,6 @@ import (
 	commonnexus "go.temporal.io/server/common/nexus"
 	"go.temporal.io/server/common/resource"
 	"go.temporal.io/server/common/rpc/interceptor"
-	"go.temporal.io/server/service/frontend"
 	"go.temporal.io/server/service/frontend/configs"
 )
 
@@ -84,7 +83,7 @@ type HandlerOptions struct {
 	NamespaceConcurrencyLimitInterceptor *interceptor.ConcurrentRequestLimitInterceptor
 	RateLimitInterceptor                 *interceptor.RateLimitInterceptor
 	AuthInterceptor                      *authorization.Interceptor
-	redirectionInterceptor               *frontend.RedirectionInterceptor
+	redirectionInterceptor               *interceptor.Redirection
 }
 
 type completionHandler struct {
@@ -204,34 +203,34 @@ func (h *completionHandler) forwardCompleteOperation(ctx context.Context, r *nex
 	client, err := h.forwardingClients.Get(rCtx.namespace.ActiveClusterName())
 	if err != nil {
 		h.Logger.Error("unable to get HTTP client for forward request", tag.Operation(apiName), tag.WorkflowNamespace(rCtx.namespace.Name().String()), tag.Error(err), tag.SourceCluster(h.clusterMetadata.GetCurrentClusterName()), tag.TargetCluster(rCtx.namespace.ActiveClusterName()))
-		return nexus.HandlerErrorf(nexus.HandlerErrorTypeInternal, "request forward failed")
+		return nexus.HandlerErrorf(nexus.HandlerErrorTypeInternal, "internal error")
 	}
 
 	forwardURL, err := url.JoinPath(client.Address, commonnexus.RouteCompletionCallback.Path(rCtx.namespace.Name().String()))
 	if err != nil {
 		h.Logger.Error("failed to construct forwarding request URL", tag.Operation(apiName), tag.WorkflowNamespace(rCtx.namespace.Name().String()), tag.Error(err), tag.TargetCluster(rCtx.namespace.ActiveClusterName()))
-		return nexus.HandlerErrorf(nexus.HandlerErrorTypeInternal, "request forward failed")
+		return nexus.HandlerErrorf(nexus.HandlerErrorTypeInternal, "internal error")
 	}
 
 	forwardReq, err := http.NewRequestWithContext(ctx, r.HTTPRequest.Method, forwardURL, r.HTTPRequest.Body)
 	if err != nil {
 		h.Logger.Error("failed to construct forwarding HTTP request", tag.Operation(apiName), tag.WorkflowNamespace(rCtx.namespace.Name().String()), tag.Error(err))
-		return nexus.HandlerErrorf(nexus.HandlerErrorTypeInternal, "request forward failed")
+		return nexus.HandlerErrorf(nexus.HandlerErrorTypeInternal, "internal error")
 	}
 
 	forwardReq.Header = r.HTTPRequest.Header.Clone()
-	forwardReq.Header.Set(frontend.DCRedirectionApiHeaderName, "true")
+	forwardReq.Header.Set(interceptor.DCRedirectionApiHeaderName, "true")
 
 	resp, err := client.Do(forwardReq)
 	if err != nil {
 		h.Logger.Error("received error from HTTP client when forwarding request", tag.Operation(apiName), tag.WorkflowNamespace(rCtx.namespace.Name().String()), tag.Error(err))
-		return nexus.HandlerErrorf(nexus.HandlerErrorTypeUnavailable, "request forward failed")
+		return nexus.HandlerErrorf(nexus.HandlerErrorTypeInternal, "internal error")
 	}
 
 	body, err := readAndReplaceBody(resp)
 	if err != nil {
 		h.Logger.Error("unable to read HTTP response for forwarded request", tag.Operation(apiName), tag.WorkflowNamespace(rCtx.namespace.Name().String()), tag.Error(err))
-		return nexus.HandlerErrorf(nexus.HandlerErrorTypeInternal, "request forward failed")
+		return nexus.HandlerErrorf(nexus.HandlerErrorTypeInternal, "internal error")
 	}
 
 	if resp.StatusCode < 300 {
@@ -240,14 +239,14 @@ func (h *completionHandler) forwardCompleteOperation(ctx context.Context, r *nex
 
 	if !isMediaTypeJSON(resp.Header.Get("Content-Type")) {
 		h.Logger.Error("received invalid content-type header for non-OK HTTP response to forwarded request", tag.Operation(apiName), tag.WorkflowNamespace(rCtx.namespace.Name().String()), tag.Value(resp.Header.Get("Content-Type")))
-		return nexus.HandlerErrorf(nexus.HandlerErrorTypeInternal, "request forward failed")
+		return nexus.HandlerErrorf(nexus.HandlerErrorTypeInternal, "internal error")
 	}
 
 	var failure nexus.Failure
 	err = json.Unmarshal(body, &failure)
 	if err != nil {
 		h.Logger.Error("failed to deserialize Nexus Failure from HTTP response to forwarded request", tag.Operation(apiName), tag.WorkflowNamespace(rCtx.namespace.Name().String()), tag.Error(err))
-		return nexus.HandlerErrorf(nexus.HandlerErrorTypeInternal, "request forward failed")
+		return nexus.HandlerErrorf(nexus.HandlerErrorTypeInternal, "internal error")
 	}
 
 	return &nexus.HandlerError{
@@ -373,7 +372,7 @@ func (c *requestContext) interceptRequest(ctx context.Context, request *nexus.Co
 			return notActiveErr
 		}
 		c.metricsHandler = c.metricsHandler.WithTags(metrics.NexusOutcomeTag("namespace_inactive_forwarding_disabled"))
-		return commonnexus.ConvertGRPCError(notActiveErr, false)
+		return nexus.HandlerErrorf(nexus.HandlerErrorTypeUnavailable, "cluster inactive")
 	}
 
 	cleanup, err := c.NamespaceConcurrencyLimitInterceptor.Allow(c.namespace.Name(), apiName, c.metricsHandlerForInterceptors, request)
@@ -404,7 +403,7 @@ func (c *requestContext) interceptRequest(ctx context.Context, request *nexus.Co
 // redirection conditions can be checked at once. If either of those methods are updated, this should
 // be kept in sync.
 func (c *requestContext) shouldForwardRequest(ctx context.Context, header http.Header) bool {
-	redirectHeader := header.Get(frontend.DCRedirectionContextHeaderName)
+	redirectHeader := header.Get(interceptor.DCRedirectionContextHeaderName)
 	redirectAllowed, err := strconv.ParseBool(redirectHeader)
 	if err != nil {
 		redirectAllowed = true

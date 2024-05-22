@@ -27,6 +27,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 
@@ -46,7 +47,6 @@ import (
 	"go.temporal.io/server/common/metrics/metricstest"
 	"go.temporal.io/server/common/namespace"
 	cnexus "go.temporal.io/server/common/nexus"
-	"go.temporal.io/server/components/nexusoperations"
 	"go.temporal.io/server/tests"
 )
 
@@ -65,9 +65,8 @@ func (s *NexusRequestForwardingSuite) SetupSuite() {
 	s.dynamicConfigOverrides = map[dynamicconfig.Key]any{
 		// Make sure we don't hit the rate limiter in tests
 		dynamicconfig.FrontendGlobalNamespaceNamespaceReplicationInducingAPIsRPS.Key(): 1000,
-		dynamicconfig.FrontendEnableNexusAPIs.Key():                                    true,
-		nexusoperations.Enabled.Key():                                                  true,
-		dynamicconfig.RefreshNexusEndpointsMinWait.Key():                               1 * time.Millisecond,
+		dynamicconfig.EnableNexus.Key():                  true,
+		dynamicconfig.RefreshNexusEndpointsMinWait.Key(): 1 * time.Millisecond,
 	}
 	s.setupSuite([]string{"nexus_request_forwarding_active", "nexus_request_forwarding_standby"})
 }
@@ -157,8 +156,7 @@ func (s *NexusRequestForwardingSuite) TestStartOperationForwardedFromStandbyToAc
 			assertion: func(t *testing.T, result *nexus.ClientStartOperationResult[string], retErr error, activeSnap map[string][]*metricstest.CapturedRecording, passiveSnap map[string][]*metricstest.CapturedRecording) {
 				var unexpectedError *nexus.UnexpectedResponseError
 				require.ErrorAs(t, retErr, &unexpectedError)
-				// TODO: nexus should export this
-				require.Equal(t, 520, unexpectedError.Response.StatusCode)
+				require.Equal(t, nexus.StatusDownstreamError, unexpectedError.Response.StatusCode)
 				require.Equal(t, "deliberate internal failure", unexpectedError.Failure.Message)
 				requireExpectedMetricsCaptured(t, activeSnap, ns, "StartOperation", "handler_error")
 				requireExpectedMetricsCaptured(t, passiveSnap, ns, "StartOperation", "forwarded_request_error")
@@ -178,8 +176,7 @@ func (s *NexusRequestForwardingSuite) TestStartOperationForwardedFromStandbyToAc
 			assertion: func(t *testing.T, result *nexus.ClientStartOperationResult[string], retErr error, activeSnap map[string][]*metricstest.CapturedRecording, passiveSnap map[string][]*metricstest.CapturedRecording) {
 				var unexpectedError *nexus.UnexpectedResponseError
 				require.ErrorAs(t, retErr, &unexpectedError)
-				// TODO: nexus should export this
-				require.Equal(t, 400, unexpectedError.Response.StatusCode)
+				require.Equal(t, http.StatusServiceUnavailable, unexpectedError.Response.StatusCode)
 				require.Equal(t, "bad request", unexpectedError.Failure.Message)
 				requireExpectedMetricsCaptured(t, passiveSnap, ns, "StartOperation", "namespace_inactive_forwarding_disabled")
 			},
@@ -260,8 +257,7 @@ func (s *NexusRequestForwardingSuite) TestCancelOperationForwardedFromStandbyToA
 			assertion: func(t *testing.T, retErr error, activeSnap map[string][]*metricstest.CapturedRecording, passiveSnap map[string][]*metricstest.CapturedRecording) {
 				var unexpectedError *nexus.UnexpectedResponseError
 				require.ErrorAs(t, retErr, &unexpectedError)
-				// TODO: nexus should export this
-				require.Equal(t, 520, unexpectedError.Response.StatusCode)
+				require.Equal(t, nexus.StatusDownstreamError, unexpectedError.Response.StatusCode)
 				require.Equal(t, "deliberate internal failure", unexpectedError.Failure.Message)
 				requireExpectedMetricsCaptured(t, activeSnap, ns, "CancelOperation", "handler_error")
 				requireExpectedMetricsCaptured(t, passiveSnap, ns, "CancelOperation", "forwarded_request_error")
@@ -281,8 +277,7 @@ func (s *NexusRequestForwardingSuite) TestCancelOperationForwardedFromStandbyToA
 			assertion: func(t *testing.T, retErr error, activeSnap map[string][]*metricstest.CapturedRecording, passiveSnap map[string][]*metricstest.CapturedRecording) {
 				var unexpectedError *nexus.UnexpectedResponseError
 				require.ErrorAs(t, retErr, &unexpectedError)
-				// TODO: nexus should export this
-				require.Equal(t, 400, unexpectedError.Response.StatusCode)
+				require.Equal(t, http.StatusServiceUnavailable, unexpectedError.Response.StatusCode)
 				require.Equal(t, "bad request", unexpectedError.Failure.Message)
 				requireExpectedMetricsCaptured(t, passiveSnap, ns, "CancelOperation", "namespace_inactive_forwarding_disabled")
 			},

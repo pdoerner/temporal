@@ -143,7 +143,7 @@ func (c *operationContext) interceptRequest(ctx context.Context, request *matchi
 			return notActiveErr
 		}
 		c.metricsHandler = c.metricsHandler.WithTags(metrics.NexusOutcomeTag("namespace_inactive_forwarding_disabled"))
-		return commonnexus.ConvertGRPCError(notActiveErr, false)
+		return nexus.HandlerErrorf(nexus.HandlerErrorTypeUnavailable, "cluster inactive")
 	}
 
 	cleanup, err := c.namespaceConcurrencyLimitInterceptor.Allow(c.namespace.Name(), c.apiName, c.metricsHandlerForInterceptors, request)

@@ -197,9 +197,15 @@ func AdaptAuthorizeError(err error) error {
 func HandlerErrorFromClientError(err error) error {
 	var unexpectedRespErr *nexus.UnexpectedResponseError
 	if errors.As(err, &unexpectedRespErr) {
+		failure := unexpectedRespErr.Failure
+		if unexpectedRespErr.Failure == nil {
+			failure = &nexus.Failure{
+				Message: unexpectedRespErr.Error(),
+			}
+		}
 		return &nexus.HandlerError{
 			Type:    HandlerErrorTypeFromHTTPStatus(unexpectedRespErr.Response.StatusCode),
-			Failure: unexpectedRespErr.Failure,
+			Failure: failure,
 		}
 	}
 	// Let the nexus SDK handle this for us (log and convert to an internal error).
